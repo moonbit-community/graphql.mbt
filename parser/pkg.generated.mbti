@@ -1,0 +1,378 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/graphql/parser"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn consume_definition(String) -> (QueryDefinition, String) raise ParseError
+
+pub fn minify_query(String) -> String raise ParseError
+
+pub fn parse_query(String) -> QueryDocument raise ParseError
+
+pub fn parse_schema(String) -> SchemaDocument raise ParseError
+
+pub fn tokenize(String) -> Array[Token] raise ParseError
+
+// Errors
+pub(all) suberror ParseError {
+  GraphQLParseError(String, Pos)
+} derive(Eq)
+pub fn ParseError::to_string(Self) -> String
+pub impl Show for ParseError
+
+// Types and methods
+pub(all) struct Directive {
+  position : Pos
+  name : String
+  arguments : Array[(String, Value)]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct DirectiveDefinition {
+  position : Pos
+  description : String?
+  name : String
+  arguments : Array[InputValue]
+  repeatable : Bool
+  locations : Array[DirectiveLocation]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum DirectiveLocation {
+  LocationQuery
+  LocationMutation
+  LocationSubscription
+  LocationField
+  LocationFragmentDefinition
+  LocationFragmentSpread
+  LocationInlineFragment
+  LocationSchema
+  LocationScalar
+  LocationObject
+  LocationFieldDefinition
+  LocationArgumentDefinition
+  LocationInterface
+  LocationUnion
+  LocationEnum
+  LocationEnumValue
+  LocationInputObject
+  LocationInputFieldDefinition
+  LocationVariableDefinition
+} derive(Eq, @debug.Debug)
+pub fn DirectiveLocation::as_string(Self) -> String
+pub fn DirectiveLocation::is_query(Self) -> Bool
+pub fn DirectiveLocation::is_schema(Self) -> Bool
+
+pub(all) struct EnumType {
+  position : Pos
+  description : String?
+  name : String
+  directives : Array[Directive]
+  values : Array[EnumValue]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct EnumTypeExtension {
+  position : Pos
+  name : String
+  directives : Array[Directive]
+  values : Array[EnumValue]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct EnumValue {
+  position : Pos
+  description : String?
+  name : String
+  directives : Array[Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Field {
+  position : Pos
+  field_alias : String?
+  name : String
+  arguments : Array[(String, Value)]
+  directives : Array[Directive]
+  selection_set : SelectionSet
+} derive(Eq, @debug.Debug)
+
+pub(all) struct FragmentDefinition {
+  position : Pos
+  name : String
+  type_condition : TypeCondition
+  directives : Array[Directive]
+  selection_set : SelectionSet
+} derive(Eq, @debug.Debug)
+
+pub(all) struct FragmentSpread {
+  position : Pos
+  fragment_name : String
+  directives : Array[Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum GqlType {
+  NamedType(String)
+  ListType(GqlType)
+  NonNullType(GqlType)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InlineFragment {
+  position : Pos
+  type_condition : TypeCondition?
+  directives : Array[Directive]
+  selection_set : SelectionSet
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InputObjectType {
+  position : Pos
+  description : String?
+  name : String
+  directives : Array[Directive]
+  fields : Array[InputValue]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InputObjectTypeExtension {
+  position : Pos
+  name : String
+  directives : Array[Directive]
+  fields : Array[InputValue]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InputValue {
+  position : Pos
+  description : String?
+  name : String
+  value_type : GqlType
+  default_value : Value?
+  directives : Array[Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InterfaceType {
+  position : Pos
+  description : String?
+  name : String
+  implements_interfaces : Array[String]
+  directives : Array[Directive]
+  fields : Array[SchemaField]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct InterfaceTypeExtension {
+  position : Pos
+  name : String
+  implements_interfaces : Array[String]
+  directives : Array[Directive]
+  fields : Array[SchemaField]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Mutation {
+  position : Pos
+  name : String?
+  variable_definitions : Array[VariableDefinition]
+  directives : Array[Directive]
+  selection_set : SelectionSet
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Number {
+  value : Int64
+} derive(Eq, @debug.Debug)
+pub fn Number::as_int64(Self) -> Int64
+
+pub(all) struct ObjectType {
+  position : Pos
+  description : String?
+  name : String
+  implements_interfaces : Array[String]
+  directives : Array[Directive]
+  fields : Array[SchemaField]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ObjectTypeExtension {
+  position : Pos
+  name : String
+  implements_interfaces : Array[String]
+  directives : Array[Directive]
+  fields : Array[SchemaField]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum OperationDefinition {
+  SelectionSetOperation(SelectionSet)
+  QueryOperation(Query)
+  MutationOperation(Mutation)
+  SubscriptionOperation(Subscription)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Pos {
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Query {
+  position : Pos
+  name : String?
+  variable_definitions : Array[VariableDefinition]
+  directives : Array[Directive]
+  selection_set : SelectionSet
+} derive(Eq, @debug.Debug)
+
+pub(all) enum QueryDefinition {
+  OperationDefinition(OperationDefinition)
+  FragmentDefinition(FragmentDefinition)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct QueryDocument {
+  definitions : Array[QueryDefinition]
+} derive(Eq, @debug.Debug)
+pub fn QueryDocument::format(Self, style? : Style) -> String
+pub fn QueryDocument::to_string(Self) -> String
+pub impl Show for QueryDocument
+
+pub(all) struct ScalarType {
+  position : Pos
+  description : String?
+  name : String
+  directives : Array[Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ScalarTypeExtension {
+  position : Pos
+  name : String
+  directives : Array[Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum SchemaDefinition {
+  SchemaDef(SchemaDefinitionData)
+  TypeDef(TypeDefinition)
+  TypeExt(TypeExtension)
+  DirectiveDef(DirectiveDefinition)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SchemaDefinitionData {
+  position : Pos
+  directives : Array[Directive]
+  query : String?
+  mutation : String?
+  subscription : String?
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SchemaDocument {
+  definitions : Array[SchemaDefinition]
+} derive(Eq, @debug.Debug)
+pub fn SchemaDocument::format(Self, style? : Style) -> String
+pub fn SchemaDocument::to_string(Self) -> String
+pub impl Show for SchemaDocument
+
+pub(all) struct SchemaField {
+  position : Pos
+  description : String?
+  name : String
+  arguments : Array[InputValue]
+  field_type : GqlType
+  directives : Array[Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Selection {
+  FieldSelection(Field)
+  FragmentSpreadSelection(FragmentSpread)
+  InlineFragmentSelection(InlineFragment)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SelectionSet {
+  span : (Pos, Pos)
+  items : Array[Selection]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Style {
+  indent : Int
+  multiline_arguments : Bool
+} derive(Eq, @debug.Debug)
+pub fn Style::default() -> Self
+pub fn Style::with_indent(Self, Int) -> Self
+pub fn Style::with_multiline_arguments(Self, Bool) -> Self
+
+pub(all) struct Subscription {
+  position : Pos
+  name : String?
+  variable_definitions : Array[VariableDefinition]
+  directives : Array[Directive]
+  selection_set : SelectionSet
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Token {
+  kind : TokenKind
+  value : String
+  position : Pos
+  start_offset : Int
+  end_offset : Int
+  next_offset : Int
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TokenKind {
+  TkPunctuator
+  TkName
+  TkIntValue
+  TkFloatValue
+  TkStringValue
+  TkBlockString
+  TkEof
+} derive(Eq, @debug.Debug)
+pub impl Show for TokenKind
+
+pub(all) enum TypeCondition {
+  On(String)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TypeDefinition {
+  ScalarTypeDef(ScalarType)
+  ObjectTypeDef(ObjectType)
+  InterfaceTypeDef(InterfaceType)
+  UnionTypeDef(UnionType)
+  EnumTypeDef(EnumType)
+  InputObjectTypeDef(InputObjectType)
+} derive(Eq, @debug.Debug)
+
+pub(all) enum TypeExtension {
+  ScalarTypeExt(ScalarTypeExtension)
+  ObjectTypeExt(ObjectTypeExtension)
+  InterfaceTypeExt(InterfaceTypeExtension)
+  UnionTypeExt(UnionTypeExtension)
+  EnumTypeExt(EnumTypeExtension)
+  InputObjectTypeExt(InputObjectTypeExtension)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct UnionType {
+  position : Pos
+  description : String?
+  name : String
+  directives : Array[Directive]
+  types : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct UnionTypeExtension {
+  position : Pos
+  name : String
+  directives : Array[Directive]
+  types : Array[String]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Value {
+  Variable(String)
+  IntValue(Number)
+  FloatValue(Double)
+  StringValue(String)
+  BooleanValue(Bool)
+  NullValue
+  EnumValue(String)
+  ListValue(Array[Value])
+  ObjectValue(Array[(String, Value)])
+} derive(Eq, @debug.Debug)
+
+pub(all) struct VariableDefinition {
+  position : Pos
+  name : String
+  var_type : GqlType
+  default_value : Value?
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits
+
