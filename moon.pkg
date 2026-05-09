@@ -1,1 +1,5 @@
-
+import {
+  "moonbit-community/graphql/parser" @parser,
+  "moonbitlang/async" @async,
+  "moonbitlang/async/aqueue" @aqueue,
+}

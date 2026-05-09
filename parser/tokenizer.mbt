@@ -1,4 +1,5 @@
 ///|
+/// Token category emitted by the GraphQL tokenizer.
 pub(all) enum TokenKind {
   TkPunctuator
   TkName
@@ -10,6 +11,10 @@ pub(all) enum TokenKind {
 } derive(Eq, Debug)
 
 ///|
+/// GraphQL token with source span and the offset after ignored trivia.
+///
+/// `start_offset` and `end_offset` cover the token itself. `next_offset` points
+/// to the next non-ignored source position after whitespace and comments.
 pub(all) struct Token {
   kind : TokenKind
   value : String
@@ -20,6 +25,10 @@ pub(all) struct Token {
 } derive(Eq, Debug)
 
 ///|
+/// Tokenizer state.
+///
+/// `recursion_limit` bounds nested punctuation pairs so malformed deeply nested
+/// input fails quickly before parser recursion.
 priv struct Lexer {
   source : String
   mut input : StringView
@@ -29,6 +38,10 @@ priv struct Lexer {
 }
 
 ///|
+/// Tokenize a GraphQL source document.
+///
+/// The returned array always ends with a `TkEof` token. Whitespace, commas, and
+/// comments are skipped but reflected in token offsets.
 pub fn tokenize(source : String) -> Array[Token] raise ParseError {
   let lexer = Lexer::{
     source,

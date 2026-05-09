@@ -1,15 +1,20 @@
 ///|
+/// 1-based source position in a GraphQL document.
 pub(all) struct Pos {
   line : Int
   column : Int
 } derive(Eq, Debug)
 
 ///|
+/// Error raised by tokenizer, query parser, and schema parser.
+///
+/// Each parse error carries the source position where parsing failed.
 pub(all) suberror ParseError {
   GraphQLParseError(String, Pos)
 } derive(Eq)
 
 ///|
+/// Render a parse error with line and column context.
 pub fn ParseError::to_string(self : ParseError) -> String {
   match self {
     GraphQLParseError(message, { line, column }) =>
@@ -28,16 +33,22 @@ fn[T] parse_error(message : String, position : Pos) -> T raise ParseError {
 }
 
 ///|
+/// Integer literal wrapper.
+///
+/// GraphQL integer literals are parsed as `Int64` so tooling can preserve the
+/// full accepted input range before application-level coercion.
 pub(all) struct Number {
   value : Int64
 } derive(Eq, Debug)
 
 ///|
+/// Return the parsed integer literal as `Int64`.
 pub fn Number::as_int64(self : Number) -> Int64 {
   self.value
 }
 
 ///|
+/// GraphQL type reference used by variable, field, and input definitions.
 pub(all) enum GqlType {
   NamedType(String)
   ListType(GqlType)
@@ -45,6 +56,10 @@ pub(all) enum GqlType {
 } derive(Eq, Debug)
 
 ///|
+/// GraphQL literal or variable value.
+///
+/// This representation preserves GraphQL-specific distinctions such as enum
+/// values versus strings and variables versus their eventual runtime values.
 pub(all) enum Value {
   Variable(String)
   IntValue(Number)
@@ -58,6 +73,7 @@ pub(all) enum Value {
 } derive(Eq, Debug)
 
 ///|
+/// GraphQL directive use with parsed arguments.
 pub(all) struct Directive {
   position : Pos
   name : String
@@ -65,17 +81,20 @@ pub(all) struct Directive {
 } derive(Eq, Debug)
 
 ///|
+/// Parsed executable GraphQL document.
 pub(all) struct QueryDocument {
   definitions : Array[QueryDefinition]
 } derive(Eq, Debug)
 
 ///|
+/// Top-level executable document definition.
 pub(all) enum QueryDefinition {
   OperationDefinition(OperationDefinition)
   FragmentDefinition(FragmentDefinition)
 } derive(Eq, Debug)
 
 ///|
+/// GraphQL operation definition, including shorthand selection-set operations.
 pub(all) enum OperationDefinition {
   SelectionSetOperation(SelectionSet)
   QueryOperation(Query)
@@ -84,6 +103,7 @@ pub(all) enum OperationDefinition {
 } derive(Eq, Debug)
 
 ///|
+/// Named fragment definition.
 pub(all) struct FragmentDefinition {
   position : Pos
   name : String
@@ -93,6 +113,7 @@ pub(all) struct FragmentDefinition {
 } derive(Eq, Debug)
 
 ///|
+/// Parsed `query` operation.
 pub(all) struct Query {
   position : Pos
   name : String?
@@ -102,6 +123,7 @@ pub(all) struct Query {
 } derive(Eq, Debug)
 
 ///|
+/// Parsed `mutation` operation.
 pub(all) struct Mutation {
   position : Pos
   name : String?
@@ -111,6 +133,7 @@ pub(all) struct Mutation {
 } derive(Eq, Debug)
 
 ///|
+/// Parsed `subscription` operation.
 pub(all) struct Subscription {
   position : Pos
   name : String?
@@ -120,12 +143,14 @@ pub(all) struct Subscription {
 } derive(Eq, Debug)
 
 ///|
+/// Non-empty selection set with start and end source positions.
 pub(all) struct SelectionSet {
   span : (Pos, Pos)
   items : Array[Selection]
 } derive(Eq, Debug)
 
 ///|
+/// Variable declaration from an operation definition.
 pub(all) struct VariableDefinition {
   position : Pos
   name : String
@@ -134,6 +159,7 @@ pub(all) struct VariableDefinition {
 } derive(Eq, Debug)
 
 ///|
+/// GraphQL field, fragment spread, or inline fragment selection.
 pub(all) enum Selection {
   FieldSelection(Field)
   FragmentSpreadSelection(FragmentSpread)
@@ -141,6 +167,8 @@ pub(all) enum Selection {
 } derive(Eq, Debug)
 
 ///|
+/// Field selection with optional alias, arguments, directives, and nested
+/// selection set.
 pub(all) struct Field {
   position : Pos
   field_alias : String?
@@ -151,6 +179,7 @@ pub(all) struct Field {
 } derive(Eq, Debug)
 
 ///|
+/// Reference to a named fragment.
 pub(all) struct FragmentSpread {
   position : Pos
   fragment_name : String
@@ -158,11 +187,13 @@ pub(all) struct FragmentSpread {
 } derive(Eq, Debug)
 
 ///|
+/// Fragment type condition.
 pub(all) enum TypeCondition {
   On(String)
 } derive(Eq, Debug)
 
 ///|
+/// Inline fragment with optional type condition.
 pub(all) struct InlineFragment {
   position : Pos
   type_condition : TypeCondition?
@@ -171,11 +202,13 @@ pub(all) struct InlineFragment {
 } derive(Eq, Debug)
 
 ///|
+/// Parsed GraphQL schema document.
 pub(all) struct SchemaDocument {
   definitions : Array[SchemaDefinition]
 } derive(Eq, Debug)
 
 ///|
+/// Top-level SDL definition.
 pub(all) enum SchemaDefinition {
   SchemaDef(SchemaDefinitionData)
   TypeDef(TypeDefinition)
@@ -184,6 +217,7 @@ pub(all) enum SchemaDefinition {
 } derive(Eq, Debug)
 
 ///|
+/// Explicit `schema { ... }` root operation mapping.
 pub(all) struct SchemaDefinitionData {
   position : Pos
   directives : Array[Directive]
@@ -193,6 +227,7 @@ pub(all) struct SchemaDefinitionData {
 } derive(Eq, Debug)
 
 ///|
+/// SDL type definition.
 pub(all) enum TypeDefinition {
   ScalarTypeDef(ScalarType)
   ObjectTypeDef(ObjectType)
@@ -203,6 +238,7 @@ pub(all) enum TypeDefinition {
 } derive(Eq, Debug)
 
 ///|
+/// SDL type extension.
 pub(all) enum TypeExtension {
   ScalarTypeExt(ScalarTypeExtension)
   ObjectTypeExt(ObjectTypeExtension)
@@ -213,6 +249,7 @@ pub(all) enum TypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// SDL scalar type definition.
 pub(all) struct ScalarType {
   position : Pos
   description : String?
@@ -221,6 +258,7 @@ pub(all) struct ScalarType {
 } derive(Eq, Debug)
 
 ///|
+/// SDL scalar type extension.
 pub(all) struct ScalarTypeExtension {
   position : Pos
   name : String
@@ -228,6 +266,7 @@ pub(all) struct ScalarTypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// SDL object type definition.
 pub(all) struct ObjectType {
   position : Pos
   description : String?
@@ -238,6 +277,7 @@ pub(all) struct ObjectType {
 } derive(Eq, Debug)
 
 ///|
+/// SDL object type extension.
 pub(all) struct ObjectTypeExtension {
   position : Pos
   name : String
@@ -247,6 +287,7 @@ pub(all) struct ObjectTypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// SDL object or interface field definition.
 pub(all) struct SchemaField {
   position : Pos
   description : String?
@@ -257,6 +298,7 @@ pub(all) struct SchemaField {
 } derive(Eq, Debug)
 
 ///|
+/// SDL input field or argument definition.
 pub(all) struct InputValue {
   position : Pos
   description : String?
@@ -267,6 +309,7 @@ pub(all) struct InputValue {
 } derive(Eq, Debug)
 
 ///|
+/// SDL interface type definition.
 pub(all) struct InterfaceType {
   position : Pos
   description : String?
@@ -277,6 +320,7 @@ pub(all) struct InterfaceType {
 } derive(Eq, Debug)
 
 ///|
+/// SDL interface type extension.
 pub(all) struct InterfaceTypeExtension {
   position : Pos
   name : String
@@ -286,6 +330,7 @@ pub(all) struct InterfaceTypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// SDL union type definition.
 pub(all) struct UnionType {
   position : Pos
   description : String?
@@ -295,6 +340,7 @@ pub(all) struct UnionType {
 } derive(Eq, Debug)
 
 ///|
+/// SDL union type extension.
 pub(all) struct UnionTypeExtension {
   position : Pos
   name : String
@@ -303,6 +349,7 @@ pub(all) struct UnionTypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// SDL enum type definition.
 pub(all) struct EnumType {
   position : Pos
   description : String?
@@ -312,6 +359,7 @@ pub(all) struct EnumType {
 } derive(Eq, Debug)
 
 ///|
+/// SDL enum value definition.
 pub(all) struct EnumValue {
   position : Pos
   description : String?
@@ -320,6 +368,7 @@ pub(all) struct EnumValue {
 } derive(Eq, Debug)
 
 ///|
+/// SDL enum type extension.
 pub(all) struct EnumTypeExtension {
   position : Pos
   name : String
@@ -328,6 +377,7 @@ pub(all) struct EnumTypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// SDL input object type definition.
 pub(all) struct InputObjectType {
   position : Pos
   description : String?
@@ -337,6 +387,7 @@ pub(all) struct InputObjectType {
 } derive(Eq, Debug)
 
 ///|
+/// SDL input object type extension.
 pub(all) struct InputObjectTypeExtension {
   position : Pos
   name : String
@@ -345,6 +396,7 @@ pub(all) struct InputObjectTypeExtension {
 } derive(Eq, Debug)
 
 ///|
+/// GraphQL directive location.
 pub(all) enum DirectiveLocation {
   LocationQuery
   LocationMutation
@@ -368,6 +420,7 @@ pub(all) enum DirectiveLocation {
 } derive(Eq, Debug)
 
 ///|
+/// SDL directive definition.
 pub(all) struct DirectiveDefinition {
   position : Pos
   description : String?
@@ -378,6 +431,7 @@ pub(all) struct DirectiveDefinition {
 } derive(Eq, Debug)
 
 ///|
+/// Return the canonical GraphQL spec name for a directive location.
 pub fn DirectiveLocation::as_string(self : DirectiveLocation) -> String {
   match self {
     LocationQuery => "QUERY"
@@ -403,6 +457,7 @@ pub fn DirectiveLocation::as_string(self : DirectiveLocation) -> String {
 }
 
 ///|
+/// Return true when this location belongs to executable GraphQL documents.
 pub fn DirectiveLocation::is_query(self : DirectiveLocation) -> Bool {
   match self {
     LocationQuery
@@ -428,6 +483,7 @@ pub fn DirectiveLocation::is_query(self : DirectiveLocation) -> Bool {
 }
 
 ///|
+/// Return true when this location belongs to GraphQL SDL.
 pub fn DirectiveLocation::is_schema(self : DirectiveLocation) -> Bool {
   !self.is_query()
 }
@@ -462,22 +518,26 @@ fn parse_directive_location(
 }
 
 ///|
+/// Pretty-printer options for parsed query and schema documents.
 pub(all) struct Style {
   indent : Int
   multiline_arguments : Bool
 } derive(Eq, Debug)
 
 ///|
+/// Default formatting style: two-space indentation and inline arguments.
 pub fn Style::default() -> Style {
   { indent: 2, multiline_arguments: false }
 }
 
 ///|
+/// Return a copy of the style with a new indentation width.
 pub fn Style::with_indent(self : Style, indent : Int) -> Style {
   { ..self, indent, }
 }
 
 ///|
+/// Return a copy of the style with multiline argument formatting toggled.
 pub fn Style::with_multiline_arguments(
   self : Style,
   multiline_arguments : Bool,

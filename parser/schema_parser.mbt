@@ -1,4 +1,9 @@
 ///|
+/// Parse a complete GraphQL SDL document.
+///
+/// The parser accepts schema definitions, type definitions, type extensions, and
+/// directive definitions, preserving descriptions and source positions in the
+/// returned AST.
 pub fn parse_schema(source : String) -> SchemaDocument raise ParseError {
   let parser = Parser::new(source)
   let definitions : Array[SchemaDefinition] = []

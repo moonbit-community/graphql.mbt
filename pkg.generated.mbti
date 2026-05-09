@@ -1,13 +1,248 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-community/graphql"
 
+import {
+  "moonbit-community/graphql/parser",
+  "moonbitlang/async/aqueue",
+  "moonbitlang/core/debug",
+}
+
 // Values
+pub async fn[Ctx] execute(ExecutableSchema[Ctx], GraphQLRequest, Ctx) -> GraphQLResponse
+
+pub async fn[Ctx] execute_with_status(ExecutableSchema[Ctx], GraphQLRequest, Ctx) -> ExecutionHttpResult
+
+pub fn[Ctx] introspect(ExecutableSchema[Ctx], format? : IntrospectionFormat) -> Json
+
+pub async fn[Ctx] start_subscription(ExecutableSchema[Ctx], GraphQLRequest, Ctx) -> Result[SubscriptionStream, GraphQLResponse]
+
+pub fn[Ctx] validate(ExecutableSchema[Ctx], GraphQLRequest) -> Array[GraphQLError]
 
 // Errors
+pub(all) suberror CoercionError {
+  CoercionError(String)
+} derive(Eq, @debug.Debug)
+pub fn CoercionError::to_string(Self) -> String
+pub impl Show for CoercionError
+
+pub(all) suberror ExecutionError {
+  ExecutionError(String)
+} derive(Eq, @debug.Debug)
+pub fn ExecutionError::to_string(Self) -> String
+pub impl Show for ExecutionError
+
+pub(all) suberror SchemaError {
+  SchemaError(String)
+} derive(Eq, @debug.Debug)
+pub fn SchemaError::to_string(Self) -> String
+pub impl Show for SchemaError
+
+pub(all) suberror ValidationError {
+  ValidationError(String)
+} derive(Eq, @debug.Debug)
+pub fn ValidationError::to_string(Self) -> String
+pub impl Show for ValidationError
 
 // Types and methods
+pub(all) struct Args {
+  values : Map[String, InputValue]
+} derive(Eq, @debug.Debug)
+pub fn Args::contains(Self, String) -> Bool
+pub fn Args::empty() -> Self
+pub fn[T : FromGraphQL] Args::get(Self, String) -> T raise CoercionError
+pub fn[T : FromGraphQL] Args::get_opt(Self, String) -> T? raise CoercionError
+pub fn Args::to_map(Self) -> Map[String, InputValue]
+
+pub(all) struct DirectiveSpec {
+  name : String
+  arguments : Array[@parser.InputValue]
+  locations : Array[String]
+  repeatable : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct ExecutableSchema[Ctx] {
+  registry : TypeRegistry
+  query_type : String
+  mutation_type : String?
+  subscription_type : String?
+  resolvers : Map[String, async (ResolveInfo, Args, Ctx) -> GqlValue]
+  subscriptions : Map[String, async (ResolveInfo, Args, Ctx) -> SubscriptionStream]
+  type_resolvers : Map[String, async (String, GqlValue, Ctx) -> String]
+  validation : ValidationConfig
+}
+pub fn[Ctx] ExecutableSchema::query_type(Self[Ctx]) -> String
+pub fn[Ctx] ExecutableSchema::type_names(Self[Ctx]) -> Array[String]
+
+pub(all) struct ExecutionHttpResult {
+  status_code : Int
+  response : GraphQLResponse
+} derive(Eq, @debug.Debug)
+
+pub(all) struct FieldDef {
+  name : String
+  arguments : Array[@parser.InputValue]
+  field_type : @parser.GqlType
+  directives : Array[@parser.Directive]
+} derive(Eq, @debug.Debug)
+
+pub(all) enum GqlValue {
+  GqlNull
+  GqlString(String)
+  GqlBoolean(Bool)
+  GqlInt(Int)
+  GqlInt64(Int64)
+  GqlFloat(Double)
+  GqlEnum(String)
+  GqlList(Array[GqlValue])
+  GqlObject(Map[String, GqlValue])
+  GqlTypedObject(String, Map[String, GqlValue])
+} derive(Eq, @debug.Debug)
+pub fn GqlValue::field(Self, String) -> Self?
+pub fn GqlValue::object(ArrayView[(String, Self)]) -> Self
+pub fn GqlValue::runtime_type(Self, fallback~ : String) -> String
+pub fn GqlValue::to_json(Self) -> Json
+pub fn GqlValue::typed_object(String, ArrayView[(String, Self)]) -> Self
+
+pub(all) struct GraphQLError {
+  message : String
+  path : Array[PathSegment]
+  locations : Array[SourceLocation]
+} derive(Eq, @debug.Debug)
+pub fn GraphQLError::new(String, path? : Array[PathSegment], locations? : Array[SourceLocation]) -> Self
+pub fn GraphQLError::to_json(Self) -> Json
+
+pub(all) struct GraphQLRequest {
+  query : String
+  operation_name : String?
+  variables : Map[String, InputValue]
+} derive(Eq, @debug.Debug)
+pub fn GraphQLRequest::new(String, operation_name? : String, variables? : Map[String, InputValue]) -> Self
+
+pub(all) struct GraphQLResponse {
+  data : GqlValue?
+  errors : Array[GraphQLError]
+} derive(Eq, @debug.Debug)
+pub fn GraphQLResponse::data(GqlValue) -> Self
+pub fn GraphQLResponse::error(String) -> Self
+pub fn GraphQLResponse::to_json(Self) -> Json
+
+pub(all) enum InputValue {
+  InputNull
+  InputString(String)
+  InputBoolean(Bool)
+  InputInt(Int64)
+  InputFloat(Double)
+  InputEnum(String)
+  InputList(Array[InputValue])
+  InputObject(Map[String, InputValue])
+} derive(Eq, @debug.Debug)
+pub fn InputValue::from_json(Json) -> Self
+pub fn InputValue::to_json(Self) -> Json
+
+pub(all) enum IntrospectionFormat {
+  Full
+  TypeNamesOnly
+} derive(Eq, @debug.Debug)
+
+pub(all) enum PathSegment {
+  PathField(String)
+  PathIndex(Int)
+} derive(Eq, @debug.Debug)
+pub fn PathSegment::to_json(Self) -> Json
+
+pub(all) struct ResolveInfo {
+  type_name : String
+  field_name : String
+  response_key : String
+  path : Array[PathSegment]
+  source : GqlValue
+} derive(Eq, @debug.Debug)
+
+pub(all) struct SchemaBuilder[Ctx] {
+  registry : TypeRegistry
+  query_type : String
+  mutation_type : String?
+  subscription_type : String?
+  resolvers : Map[String, async (ResolveInfo, Args, Ctx) -> GqlValue]
+  subscriptions : Map[String, async (ResolveInfo, Args, Ctx) -> SubscriptionStream]
+  type_resolvers : Map[String, async (String, GqlValue, Ctx) -> String]
+  validation : ValidationConfig
+}
+pub fn[Ctx] SchemaBuilder::disable_introspection(Self[Ctx], Bool) -> Self[Ctx]
+pub fn[Ctx] SchemaBuilder::finish(Self[Ctx]) -> ExecutableSchema[Ctx] raise SchemaError
+pub fn[Ctx] SchemaBuilder::from_sdl(String) -> Self[Ctx] raise SchemaError
+pub fn[Ctx] SchemaBuilder::resolve(Self[Ctx], String, String, async (ResolveInfo, Args, Ctx) -> GqlValue) -> Self[Ctx]
+pub fn[Ctx] SchemaBuilder::resolve_type(Self[Ctx], String, async (String, GqlValue, Ctx) -> String) -> Self[Ctx]
+pub fn[Ctx] SchemaBuilder::subscribe(Self[Ctx], String, String, async (ResolveInfo, Args, Ctx) -> SubscriptionStream) -> Self[Ctx]
+
+pub(all) struct SourceLocation {
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+pub fn SourceLocation::to_json(Self) -> Json
+
+pub(all) struct SubscriptionStream {
+  queue : @aqueue.Queue[GraphQLResponse]
+}
+pub fn SubscriptionStream::close(Self) -> Unit
+pub fn SubscriptionStream::new() -> Self
+pub async fn SubscriptionStream::next(Self) -> GraphQLResponse?
+pub async fn SubscriptionStream::publish(Self, GraphQLResponse) -> Unit
+
+pub(all) enum TypeDef {
+  ScalarDef(String?)
+  ObjectDef(description~ : String?, fields~ : Map[String, FieldDef], interfaces~ : Array[String])
+  InterfaceDef(description~ : String?, fields~ : Map[String, FieldDef], interfaces~ : Array[String])
+  UnionDef(description~ : String?, members~ : Array[String])
+  EnumDef(description~ : String?, values~ : Array[String])
+  InputObjectDef(description~ : String?, fields~ : Map[String, @parser.InputValue])
+} derive(Eq, @debug.Debug)
+pub fn TypeDef::fields(Self) -> Map[String, FieldDef]?
+pub fn TypeDef::is_input(Self) -> Bool
+pub fn TypeDef::is_leaf(Self) -> Bool
+
+pub(all) struct TypeRegistry {
+  types : Map[String, TypeDef]
+  directives : Map[String, DirectiveSpec]
+} derive(Eq, @debug.Debug)
+pub fn TypeRegistry::contains(Self, String) -> Bool
+pub fn TypeRegistry::field(Self, String, String) -> FieldDef?
+pub fn TypeRegistry::get(Self, String) -> TypeDef?
+
+pub(all) struct ValidationConfig {
+  disable_introspection : Bool
+} derive(Eq, @debug.Debug)
+pub fn ValidationConfig::default() -> Self
 
 // Type aliases
+pub type Resolver[Ctx] = async (ResolveInfo, Args, Ctx) -> GqlValue
+
+pub type SubscriptionResolver[Ctx] = async (ResolveInfo, Args, Ctx) -> SubscriptionStream
+
+pub type TypeResolver[Ctx] = async (String, GqlValue, Ctx) -> String
 
 // Traits
+pub(open) trait FromGraphQL {
+  from_graphql(InputValue) -> Self raise CoercionError
+}
+pub impl FromGraphQL for Bool
+pub impl FromGraphQL for Int
+pub impl FromGraphQL for Int64
+pub impl FromGraphQL for Double
+pub impl FromGraphQL for String
+pub impl[T : FromGraphQL] FromGraphQL for T?
+pub impl[T : FromGraphQL] FromGraphQL for Array[T]
+pub impl FromGraphQL for Json
+
+pub(open) trait ToGraphQL {
+  to_graphql(Self) -> GqlValue
+}
+pub impl ToGraphQL for Bool
+pub impl ToGraphQL for Int
+pub impl ToGraphQL for Int64
+pub impl ToGraphQL for Double
+pub impl ToGraphQL for String
+pub impl[T : ToGraphQL] ToGraphQL for T?
+pub impl[T : ToGraphQL] ToGraphQL for Array[T]
+pub impl ToGraphQL for Json
 

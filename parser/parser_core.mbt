@@ -1,4 +1,5 @@
 ///|
+/// Shared recursive-descent parser over pre-tokenized GraphQL input.
 priv struct Parser {
   tokens : Array[Token]
   mut index : Int
@@ -119,6 +120,7 @@ fn empty_selection_set(position : Pos) -> SelectionSet {
 }
 
 ///|
+/// Parse a GraphQL type reference, including nested lists and non-null markers.
 fn Parser::parse_type(self : Parser) -> GqlType raise ParseError {
   let typ = if self.eat_punct("[") {
     let inner = self.parse_type()
@@ -136,6 +138,7 @@ fn Parser::parse_type(self : Parser) -> GqlType raise ParseError {
 }
 
 ///|
+/// Parse runtime arguments common to fields and directive uses.
 fn Parser::parse_arguments(
   self : Parser,
 ) -> Array[(String, Value)] raise ParseError {
@@ -177,6 +180,8 @@ fn Parser::parse_directives(self : Parser) -> Array[Directive] raise ParseError 
 }
 
 ///|
+/// Parse GraphQL string and block-string tokens into their semantic string
+/// value.
 fn Parser::parse_string_literal(self : Parser) -> String raise ParseError {
   let token = self.peek()
   match token.kind {
@@ -193,6 +198,7 @@ fn Parser::parse_string_literal(self : Parser) -> String raise ParseError {
 }
 
 ///|
+/// Parse GraphQL values that are not variables, lists, or input objects.
 fn Parser::parse_plain_value(self : Parser) -> Value raise ParseError {
   let token = self.peek()
   match token.kind {

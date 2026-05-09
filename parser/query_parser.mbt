@@ -1,4 +1,8 @@
 ///|
+/// Parse a complete executable GraphQL document.
+///
+/// The document may contain operations and fragment definitions. Empty input and
+/// trailing tokens raise `ParseError`.
 pub fn parse_query(source : String) -> QueryDocument raise ParseError {
   let parser = Parser::new(source)
   let definitions : Array[QueryDefinition] = []
@@ -17,6 +21,10 @@ pub fn parse_query(source : String) -> QueryDocument raise ParseError {
 }
 
 ///|
+/// Parse the first executable GraphQL definition and return the unconsumed tail.
+///
+/// This is useful for stream-like tooling that receives concatenated GraphQL
+/// definitions and wants to consume them one at a time.
 pub fn consume_definition(
   source : String,
 ) -> (QueryDefinition, String) raise ParseError {
@@ -228,6 +236,10 @@ fn Parser::parse_field(self : Parser) -> Field raise ParseError {
 }
 
 ///|
+/// Minify an executable GraphQL document while preserving token boundaries.
+///
+/// The result removes ignored whitespace and comments, inserting a single space
+/// only when two adjacent non-punctuator tokens would otherwise merge.
 pub fn minify_query(source : String) -> String raise ParseError {
   let tokens = tokenize(source)
   let pieces : Array[String] = []

@@ -157,6 +157,7 @@ fn Formatter::write_quoted(self : Formatter, value : String) -> Unit {
 }
 
 ///|
+/// Format an executable GraphQL document with a stable canonical layout.
 pub fn QueryDocument::format(
   self : QueryDocument,
   style? : Style = Style::default(),
@@ -167,6 +168,7 @@ pub fn QueryDocument::format(
 }
 
 ///|
+/// Format an executable GraphQL document using the default style.
 pub fn QueryDocument::to_string(self : QueryDocument) -> String {
   self.format()
 }
@@ -525,6 +527,7 @@ fn display_directives(
 }
 
 ///|
+/// Format an SDL document with a stable canonical layout.
 pub fn SchemaDocument::format(
   self : SchemaDocument,
   style? : Style = Style::default(),
@@ -535,6 +538,7 @@ pub fn SchemaDocument::format(
 }
 
 ///|
+/// Format an SDL document using the default style.
 pub fn SchemaDocument::to_string(self : SchemaDocument) -> String {
   self.format()
 }

@@ -14,7 +14,7 @@
   - `SchemaBuilder::resolve(type_name, field_name, resolver) -> Self`
   - `SchemaBuilder::subscribe(type_name, field_name, resolver) -> Self`
   - `SchemaBuilder::finish() -> ExecutableSchema[Ctx] raise SchemaError`
-  - `async fn execute[Ctx](ExecutableSchema[Ctx], GraphQLRequest, &Ctx) -> GraphQLResponse`
+  - `async fn execute[Ctx](ExecutableSchema[Ctx], GraphQLRequest, Ctx) -> GraphQLResponse`
   - `fn introspect(ExecutableSchema[_], format~ : IntrospectionFormat) -> Json`
 - Typed layer:
   - `trait ToGraphQL { to_graphql(Self) -> GqlValue }`
@@ -39,7 +39,7 @@
 - Execution:
   - Parse query, select operation, merge variable defaults, coerce variables/arguments, build fragment map, then recursively execute selection sets.
   - Support aliases, fragments, inline fragments, `@skip`, `@include`, `__typename`, non-null propagation, list/object recursion, field error paths, and partial data with `errors`.
-  - Resolve object/interface/union concrete type using `GqlValue` type metadata or typed `ToGraphQL` object conversion.
+  - Resolve interface/union concrete types using `GqlTypedObject` metadata or an explicit `SchemaBuilder::resolve_type` resolver, and reject concrete types that are not valid members of the abstract type.
 - HTTP and subscriptions:
   - Support `GET`, `POST application/json`, `POST application/graphql`, single and non-empty batch requests.
   - Return Juniper-like status behavior: malformed HTTP/JSON or parse/validation errors as `400`; successful GraphQL execution as `200` even when field errors are present.
