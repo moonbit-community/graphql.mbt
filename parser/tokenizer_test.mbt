@@ -1,4 +1,7 @@
 ///|
+using @test {assert_eq}
+
+///|
 fn token_values(source : String) -> Array[String] raise {
   tokenize(source)
   .filter(token => token.kind != TkEof)

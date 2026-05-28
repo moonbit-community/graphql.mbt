@@ -408,7 +408,7 @@ fn compile_schema(
   let mut subscription_type : String? = None
   for definition in document.definitions {
     match definition {
-      @parser.SchemaDef(schema) => {
+      SchemaDef(schema) => {
         if query_type != None ||
           mutation_type != None ||
           subscription_type != None {
@@ -418,9 +418,9 @@ fn compile_schema(
         mutation_type = schema.mutation
         subscription_type = schema.subscription
       }
-      @parser.TypeDef(type_def) => install_type_definition(registry, type_def)
-      @parser.TypeExt(type_ext) => extend_type_definition(registry, type_ext)
-      @parser.DirectiveDef(directive) =>
+      TypeDef(type_def) => install_type_definition(registry, type_def)
+      TypeExt(type_ext) => extend_type_definition(registry, type_ext)
+      DirectiveDef(directive) =>
         install_directive_definition(registry, directive)
     }
   }
@@ -469,8 +469,8 @@ fn install_builtins(registry : TypeRegistry) -> Unit {
     arguments: [
       builtin_directive_arg(
         "reason",
-        @parser.NamedType("String"),
-        Some(@parser.StringValue("No longer supported")),
+        NamedType("String"),
+        Some(StringValue("No longer supported")),
       ),
     ],
     locations: [
@@ -488,7 +488,7 @@ fn install_builtins(registry : TypeRegistry) -> Unit {
 
 ///|
 fn non_null_named(name : String) -> @parser.GqlType {
-  @parser.NonNullType(@parser.NamedType(name))
+  NonNullType(NamedType(name))
 }
 
 ///|
@@ -513,8 +513,8 @@ fn install_type_definition(
   type_def : @parser.TypeDefinition,
 ) -> Unit raise SchemaError {
   let (name, compiled) = match type_def {
-    @parser.ScalarTypeDef(def) => (def.name, ScalarDef(def.description))
-    @parser.ObjectTypeDef(def) =>
+    ScalarTypeDef(def) => (def.name, ScalarDef(def.description))
+    ObjectTypeDef(def) =>
       (
         def.name,
         ObjectDef(
@@ -523,7 +523,7 @@ fn install_type_definition(
           interfaces=def.implements_interfaces,
         ),
       )
-    @parser.InterfaceTypeDef(def) =>
+    InterfaceTypeDef(def) =>
       (
         def.name,
         InterfaceDef(
@@ -532,9 +532,9 @@ fn install_type_definition(
           interfaces=def.implements_interfaces,
         ),
       )
-    @parser.UnionTypeDef(def) =>
+    UnionTypeDef(def) =>
       (def.name, UnionDef(description=def.description, members=def.types))
-    @parser.EnumTypeDef(def) =>
+    EnumTypeDef(def) =>
       (
         def.name,
         EnumDef(
@@ -542,7 +542,7 @@ fn install_type_definition(
           values=def.values.map(value => value.name),
         ),
       )
-    @parser.InputObjectTypeDef(def) =>
+    InputObjectTypeDef(def) =>
       (
         def.name,
         InputObjectDef(
@@ -563,11 +563,11 @@ fn extend_type_definition(
   type_ext : @parser.TypeExtension,
 ) -> Unit raise SchemaError {
   match type_ext {
-    @parser.ScalarTypeExt(def) =>
+    ScalarTypeExt(def) =>
       if !registry.types.contains(def.name) {
         schema_error("cannot extend unknown scalar `\{def.name}`")
       }
-    @parser.ObjectTypeExt(def) => {
+    ObjectTypeExt(def) => {
       let current = match registry.types.get(def.name) {
         Some(ObjectDef(description~, fields~, interfaces~)) =>
           (description, fields, interfaces)
@@ -580,7 +580,7 @@ fn extend_type_definition(
         }
       }
     }
-    @parser.InterfaceTypeExt(def) => {
+    InterfaceTypeExt(def) => {
       let current = match registry.types.get(def.name) {
         Some(InterfaceDef(description~, fields~, interfaces~)) =>
           (description, fields, interfaces)
@@ -593,7 +593,7 @@ fn extend_type_definition(
         }
       }
     }
-    @parser.UnionTypeExt(def) =>
+    UnionTypeExt(def) =>
       match registry.types.get(def.name) {
         Some(UnionDef(members~, ..)) =>
           for type_ref in def.types {
@@ -603,7 +603,7 @@ fn extend_type_definition(
           }
         _ => schema_error("cannot extend unknown union `\{def.name}`")
       }
-    @parser.EnumTypeExt(def) =>
+    EnumTypeExt(def) =>
       match registry.types.get(def.name) {
         Some(EnumDef(values~, ..)) =>
           for value in def.values {
@@ -614,7 +614,7 @@ fn extend_type_definition(
           }
         _ => schema_error("cannot extend unknown enum `\{def.name}`")
       }
-    @parser.InputObjectTypeExt(def) =>
+    InputObjectTypeExt(def) =>
       match registry.types.get(def.name) {
         Some(InputObjectDef(fields~, ..)) =>
           merge_input_maps(fields, input_values_to_map(def.fields), def.name)
@@ -708,13 +708,13 @@ fn validate_schema_directive_uses(
 ) -> Unit raise SchemaError {
   for definition in document.definitions {
     match definition {
-      @parser.SchemaDef(schema) =>
+      SchemaDef(schema) =>
         schema_validate_directives(registry, schema.directives, "SCHEMA")
-      @parser.TypeDef(type_def) =>
+      TypeDef(type_def) =>
         validate_type_definition_directives(registry, type_def)
-      @parser.TypeExt(type_ext) =>
+      TypeExt(type_ext) =>
         validate_type_extension_directives(registry, type_ext)
-      @parser.DirectiveDef(directive) =>
+      DirectiveDef(directive) =>
         schema_validate_input_values(
           registry,
           directive.arguments,
@@ -730,25 +730,25 @@ fn validate_type_definition_directives(
   type_def : @parser.TypeDefinition,
 ) -> Unit raise SchemaError {
   match type_def {
-    @parser.ScalarTypeDef(def) =>
+    ScalarTypeDef(def) =>
       schema_validate_directives(registry, def.directives, "SCALAR")
-    @parser.ObjectTypeDef(def) => {
+    ObjectTypeDef(def) => {
       schema_validate_directives(registry, def.directives, "OBJECT")
       schema_validate_fields(registry, def.fields)
     }
-    @parser.InterfaceTypeDef(def) => {
+    InterfaceTypeDef(def) => {
       schema_validate_directives(registry, def.directives, "INTERFACE")
       schema_validate_fields(registry, def.fields)
     }
-    @parser.UnionTypeDef(def) =>
+    UnionTypeDef(def) =>
       schema_validate_directives(registry, def.directives, "UNION")
-    @parser.EnumTypeDef(def) => {
+    EnumTypeDef(def) => {
       schema_validate_directives(registry, def.directives, "ENUM")
       for value in def.values {
         schema_validate_directives(registry, value.directives, "ENUM_VALUE")
       }
     }
-    @parser.InputObjectTypeDef(def) => {
+    InputObjectTypeDef(def) => {
       schema_validate_directives(registry, def.directives, "INPUT_OBJECT")
       schema_validate_input_values(
         registry,
@@ -765,25 +765,25 @@ fn validate_type_extension_directives(
   type_ext : @parser.TypeExtension,
 ) -> Unit raise SchemaError {
   match type_ext {
-    @parser.ScalarTypeExt(def) =>
+    ScalarTypeExt(def) =>
       schema_validate_directives(registry, def.directives, "SCALAR")
-    @parser.ObjectTypeExt(def) => {
+    ObjectTypeExt(def) => {
       schema_validate_directives(registry, def.directives, "OBJECT")
       schema_validate_fields(registry, def.fields)
     }
-    @parser.InterfaceTypeExt(def) => {
+    InterfaceTypeExt(def) => {
       schema_validate_directives(registry, def.directives, "INTERFACE")
       schema_validate_fields(registry, def.fields)
     }
-    @parser.UnionTypeExt(def) =>
+    UnionTypeExt(def) =>
       schema_validate_directives(registry, def.directives, "UNION")
-    @parser.EnumTypeExt(def) => {
+    EnumTypeExt(def) => {
       schema_validate_directives(registry, def.directives, "ENUM")
       for value in def.values {
         schema_validate_directives(registry, value.directives, "ENUM_VALUE")
       }
     }
-    @parser.InputObjectTypeExt(def) => {
+    InputObjectTypeExt(def) => {
       schema_validate_directives(registry, def.directives, "INPUT_OBJECT")
       schema_validate_input_values(
         registry,
@@ -1074,8 +1074,8 @@ fn assert_known_input_type(
 ///|
 fn named_type(gql_type : @parser.GqlType) -> String {
   match gql_type {
-    @parser.NamedType(name) => name
-    @parser.ListType(inner) | @parser.NonNullType(inner) => named_type(inner)
+    NamedType(name) => name
+    ListType(inner) | NonNullType(inner) => named_type(inner)
   }
 }
 

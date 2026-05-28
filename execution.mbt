@@ -157,7 +157,7 @@ pub async fn[Ctx] start_subscription(
     )
   }
   let field = match operation.selection_set.items[0] {
-    @parser.FieldSelection(field) => field
+    FieldSelection(field) => field
     _ =>
       return Err(
         GraphQLResponse::error("subscription root selection must be a field"),
@@ -384,7 +384,7 @@ async fn[Ctx] complete_value(
   path : Array[PathSegment],
 ) -> CompleteResult {
   match gql_type {
-    @parser.NonNullType(inner) => {
+    NonNullType(inner) => {
       let result = complete_value(
         schema, inner, selection_set, value, variables, fragments, context, path,
       )
@@ -400,7 +400,7 @@ async fn[Ctx] complete_value(
         { value: result.value, errors: result.errors, bubble_null: false }
       }
     }
-    @parser.ListType(inner) =>
+    ListType(inner) =>
       match value {
         GqlNull => { value: GqlNull, errors: [], bubble_null: false }
         GqlList(values) => {
@@ -437,7 +437,7 @@ async fn[Ctx] complete_value(
             bubble_null: false,
           }
       }
-    @parser.NamedType(name) =>
+    NamedType(name) =>
       match schema.registry.types.get(name) {
         Some(ScalarDef(_)) | Some(EnumDef(_)) =>
           { value, errors: [], bubble_null: false }
@@ -516,15 +516,15 @@ fn[Ctx] collect_execution_fields_into(
 ) -> Unit {
   for selection in selection_set.items {
     match selection {
-      @parser.FieldSelection(field) =>
+      FieldSelection(field) =>
         if should_include(field.directives, variables) {
           append_execution_field(collection, field)
         }
-      @parser.FragmentSpreadSelection(spread) =>
+      FragmentSpreadSelection(spread) =>
         if should_include(spread.directives, variables) {
           match fragments.get(spread.fragment_name) {
             Some(fragment) => {
-              let @parser.On(fragment_type) = fragment.type_condition
+              let On(fragment_type) = fragment.type_condition
               if types_overlap(schema.registry, runtime_type, fragment_type) {
                 collect_execution_fields_into(
                   schema,
@@ -539,10 +539,10 @@ fn[Ctx] collect_execution_fields_into(
             None => ()
           }
         }
-      @parser.InlineFragmentSelection(fragment) =>
+      InlineFragmentSelection(fragment) =>
         if should_include(fragment.directives, variables) {
           let next_type = match fragment.type_condition {
-            Some(@parser.On(name)) => name
+            Some(On(name)) => name
             None => runtime_type
           }
           if types_overlap(schema.registry, runtime_type, next_type) {

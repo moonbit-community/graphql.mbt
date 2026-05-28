@@ -3,5 +3,6 @@ import {
 }
 
 import {
+  "moonbitlang/core/test",
   "moonbitlang/x/fs",
 } for "test"

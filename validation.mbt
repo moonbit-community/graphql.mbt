@@ -35,7 +35,7 @@ fn select_operation(
   let mut has_anonymous = false
   for definition in document.definitions {
     match definition {
-      @parser.OperationDefinition(operation) => {
+      OperationDefinition(operation) => {
         let plan = operation_to_plan(operation)
         match plan.name {
           Some(name) =>
@@ -77,7 +77,7 @@ fn select_operation(
 ///|
 fn operation_to_plan(operation : @parser.OperationDefinition) -> OperationPlan {
   match operation {
-    @parser.SelectionSetOperation(selection_set) =>
+    SelectionSetOperation(selection_set) =>
       {
         kind: "query",
         name: None,
@@ -85,7 +85,7 @@ fn operation_to_plan(operation : @parser.OperationDefinition) -> OperationPlan {
         directives: [],
         selection_set,
       }
-    @parser.QueryOperation(query) =>
+    QueryOperation(query) =>
       {
         kind: "query",
         name: query.name,
@@ -93,7 +93,7 @@ fn operation_to_plan(operation : @parser.OperationDefinition) -> OperationPlan {
         directives: query.directives,
         selection_set: query.selection_set,
       }
-    @parser.MutationOperation(mutation) =>
+    MutationOperation(mutation) =>
       {
         kind: "mutation",
         name: mutation.name,
@@ -101,7 +101,7 @@ fn operation_to_plan(operation : @parser.OperationDefinition) -> OperationPlan {
         directives: mutation.directives,
         selection_set: mutation.selection_set,
       }
-    @parser.SubscriptionOperation(subscription) =>
+    SubscriptionOperation(subscription) =>
       {
         kind: "subscription",
         name: subscription.name,
@@ -132,7 +132,7 @@ fn fragment_map(
   let fragments : Map[String, @parser.FragmentDefinition] = {}
   for definition in document.definitions {
     match definition {
-      @parser.FragmentDefinition(fragment) =>
+      FragmentDefinition(fragment) =>
         if fragments.contains(fragment.name) {
           validation_error("duplicate fragment `\{fragment.name}`")
         } else {
@@ -265,9 +265,8 @@ fn validate_variable_definitions(
 ///|
 fn is_input_type(registry : TypeRegistry, gql_type : @parser.GqlType) -> Bool {
   match gql_type {
-    @parser.NonNullType(inner) | @parser.ListType(inner) =>
-      is_input_type(registry, inner)
-    @parser.NamedType(name) =>
+    NonNullType(inner) | ListType(inner) => is_input_type(registry, inner)
+    NamedType(name) =>
       match registry.types.get(name) {
         Some(type_def) => type_def.is_input()
         None => false
@@ -297,7 +296,7 @@ fn[Ctx] validate_selection_set(
   let response_keys : Map[String, String] = {}
   for selection in selection_set.items {
     match selection {
-      @parser.FieldSelection(field) => {
+      FieldSelection(field) => {
         if schema.validation.disable_introspection &&
           field.name.has_prefix("__") {
           validation_error("introspection is disabled")
@@ -317,8 +316,8 @@ fn[Ctx] validate_selection_set(
           variables,
           state,
         )
-        let field_type = if field.name == "__typename" {
-          @parser.NonNullType(@parser.NamedType("String"))
+        let field_type : @parser.GqlType = if field.name == "__typename" {
+          NonNullType(NamedType("String"))
         } else if field.name == "__schema" {
           validate_arguments(
             schema.registry,
@@ -327,7 +326,7 @@ fn[Ctx] validate_selection_set(
             variables,
             state,
           )
-          @parser.NamedType("Json")
+          NamedType("Json")
         } else if field.name == "__type" {
           validate_arguments(
             schema.registry,
@@ -336,7 +335,7 @@ fn[Ctx] validate_selection_set(
             variables,
             state,
           )
-          @parser.NamedType("Json")
+          NamedType("Json")
         } else {
           match schema.registry.field(type_name, field.name) {
             Some(definition) => {
@@ -362,7 +361,7 @@ fn[Ctx] validate_selection_set(
           state,
         )
       }
-      @parser.FragmentSpreadSelection(spread) => {
+      FragmentSpreadSelection(spread) => {
         validate_directives(
           schema.registry,
           spread.directives,
@@ -380,7 +379,7 @@ fn[Ctx] validate_selection_set(
               variables,
               state,
             )
-            let @parser.On(fragment_type) = fragment.type_condition
+            let On(fragment_type) = fragment.type_condition
             if !is_known_output_type(schema.registry, fragment_type) {
               validation_error("unknown fragment type `\{fragment_type}`")
             }
@@ -401,7 +400,7 @@ fn[Ctx] validate_selection_set(
           None => validation_error("unknown fragment `\{spread.fragment_name}`")
         }
       }
-      @parser.InlineFragmentSelection(fragment) => {
+      InlineFragmentSelection(fragment) => {
         validate_directives(
           schema.registry,
           fragment.directives,
@@ -410,7 +409,7 @@ fn[Ctx] validate_selection_set(
           state,
         )
         let next_type = match fragment.type_condition {
-          Some(@parser.On(next)) => {
+          Some(On(next)) => {
             if !is_known_output_type(schema.registry, next) {
               validation_error("unknown inline fragment type `\{next}`")
             }
@@ -470,7 +469,7 @@ fn collect_validation_fields(
 ) -> Unit {
   for selection in selection_set.items {
     match selection {
-      @parser.FieldSelection(field) =>
+      FieldSelection(field) =>
         match validation_field_type(registry, type_name, field) {
           Some(field_type) => {
             let response_key = field.field_alias.unwrap_or(field.name)
@@ -482,10 +481,10 @@ fn collect_validation_fields(
           }
           None => ()
         }
-      @parser.FragmentSpreadSelection(spread) =>
+      FragmentSpreadSelection(spread) =>
         match fragments.get(spread.fragment_name) {
           Some(fragment) => {
-            let @parser.On(fragment_type) = fragment.type_condition
+            let On(fragment_type) = fragment.type_condition
             collect_validation_fields(
               registry,
               fragment_type,
@@ -496,9 +495,9 @@ fn collect_validation_fields(
           }
           None => ()
         }
-      @parser.InlineFragmentSelection(fragment) => {
+      InlineFragmentSelection(fragment) => {
         let next_type = match fragment.type_condition {
-          Some(@parser.On(name)) => name
+          Some(On(name)) => name
           None => type_name
         }
         collect_validation_fields(
@@ -520,9 +519,9 @@ fn validation_field_type(
   field : @parser.Field,
 ) -> @parser.GqlType? {
   if field.name == "__typename" {
-    Some(@parser.NonNullType(@parser.NamedType("String")))
+    Some(NonNullType(NamedType("String")))
   } else if field.name == "__schema" || field.name == "__type" {
-    Some(@parser.NamedType("Json"))
+    Some(NamedType("Json"))
   } else {
     match registry.field(type_name, field.name) {
       Some(definition) => Some(definition.field_type)
@@ -604,13 +603,13 @@ fn same_response_shape(
   right : @parser.GqlType,
 ) -> Bool {
   match (left, right) {
-    (@parser.NonNullType(left_inner), @parser.NonNullType(right_inner)) =>
+    (NonNullType(left_inner), NonNullType(right_inner)) =>
       same_response_shape(registry, left_inner, right_inner)
-    (@parser.NonNullType(_), _) | (_, @parser.NonNullType(_)) => false
-    (@parser.ListType(left_inner), @parser.ListType(right_inner)) =>
+    (NonNullType(_), _) | (_, NonNullType(_)) => false
+    (ListType(left_inner), ListType(right_inner)) =>
       same_response_shape(registry, left_inner, right_inner)
-    (@parser.ListType(_), _) | (_, @parser.ListType(_)) => false
-    (@parser.NamedType(left_name), @parser.NamedType(right_name)) => {
+    (ListType(_), _) | (_, ListType(_)) => false
+    (NamedType(left_name), NamedType(right_name)) => {
       let left_leaf = is_leaf_type_name(registry, left_name)
       let right_leaf = is_leaf_type_name(registry, right_name)
       if left_leaf || right_leaf {
@@ -789,9 +788,9 @@ fn validate_input_value(
   location_has_default~ : Bool,
 ) -> Unit raise ValidationError {
   match expected_type {
-    @parser.NonNullType(inner) =>
+    NonNullType(inner) =>
       match value {
-        @parser.NullValue =>
+        NullValue =>
           validation_error("expected non-null \{type_to_string(expected_type)}")
         _ =>
           validate_input_value(
@@ -803,9 +802,9 @@ fn validate_input_value(
             location_has_default~,
           )
       }
-    @parser.ListType(inner) =>
+    ListType(inner) =>
       match value {
-        @parser.Variable(name) =>
+        Variable(name) =>
           validate_variable_value(
             expected_type,
             name,
@@ -813,8 +812,8 @@ fn validate_input_value(
             state,
             location_has_default~,
           )
-        @parser.NullValue => ()
-        @parser.ListValue(values) =>
+        NullValue => ()
+        ListValue(values) =>
           for item in values {
             validate_input_value(
               registry,
@@ -835,9 +834,9 @@ fn validate_input_value(
             location_has_default=false,
           )
       }
-    @parser.NamedType(name) =>
+    NamedType(name) =>
       match value {
-        @parser.Variable(variable_name) =>
+        Variable(variable_name) =>
           validate_variable_value(
             expected_type,
             variable_name,
@@ -845,7 +844,7 @@ fn validate_input_value(
             state,
             location_has_default~,
           )
-        @parser.NullValue => ()
+        NullValue => ()
         _ => validate_named_input_value(registry, name, value, variables, state)
       }
   }
@@ -861,23 +860,20 @@ fn validate_named_input_value(
 ) -> Unit raise ValidationError {
   match name {
     "String" =>
-      if !(value is @parser.StringValue(_)) {
+      if !(value is StringValue(_)) {
         validation_error("expected String")
       }
     "ID" =>
-      if !(value is @parser.StringValue(_) || value is @parser.IntValue(_)) {
+      if !(value is StringValue(_) || value is IntValue(_)) {
         validation_error("expected ID")
       }
     "Boolean" =>
-      if !(value is @parser.BooleanValue(_)) {
+      if !(value is BooleanValue(_)) {
         validation_error("expected Boolean")
       }
-    "Int" =>
-      if !(value is @parser.IntValue(_)) {
-        validation_error("expected Int")
-      }
+    "Int" => if !(value is IntValue(_)) { validation_error("expected Int") }
     "Float" =>
-      if !(value is @parser.FloatValue(_) || value is @parser.IntValue(_)) {
+      if !(value is FloatValue(_) || value is IntValue(_)) {
         validation_error("expected Float")
       }
     _ =>
@@ -885,7 +881,7 @@ fn validate_named_input_value(
         Some(ScalarDef(_)) => ()
         Some(EnumDef(values~, ..)) =>
           match value {
-            @parser.EnumValue(enum_value) =>
+            EnumValue(enum_value) =>
               if !values.contains(enum_value) {
                 validation_error("unknown enum value `\{name}.\{enum_value}`")
               }
@@ -911,7 +907,7 @@ fn validate_input_object_value(
   state : ValidationState,
 ) -> Unit raise ValidationError {
   let fields = match value {
-    @parser.ObjectValue(fields) => fields
+    ObjectValue(fields) => fields
     _ => validation_error("expected input object `\{type_name}`")
   }
   let seen : Map[String, Bool] = {}
@@ -973,7 +969,7 @@ fn variable_has_non_null_default(
   definition : @parser.VariableDefinition,
 ) -> Bool {
   match definition.default_value {
-    Some(@parser.NullValue) | None => false
+    Some(NullValue) | None => false
     Some(_) => true
   }
 }
@@ -985,27 +981,27 @@ fn variable_type_allowed(
   nullable_default_ok : Bool,
 ) -> Bool {
   match expected_type {
-    @parser.NonNullType(expected_inner) =>
+    NonNullType(expected_inner) =>
       match variable_type {
-        @parser.NonNullType(variable_inner) =>
+        NonNullType(variable_inner) =>
           variable_type_allowed(variable_inner, expected_inner, false)
         _ =>
           nullable_default_ok &&
           variable_type_allowed(variable_type, expected_inner, false)
       }
-    @parser.ListType(expected_inner) =>
+    ListType(expected_inner) =>
       match variable_type {
-        @parser.NonNullType(variable_inner) =>
+        NonNullType(variable_inner) =>
           variable_type_allowed(variable_inner, expected_type, false)
-        @parser.ListType(variable_inner) =>
+        ListType(variable_inner) =>
           variable_type_allowed(variable_inner, expected_inner, false)
         _ => false
       }
-    @parser.NamedType(expected_name) =>
+    NamedType(expected_name) =>
       match variable_type {
-        @parser.NonNullType(variable_inner) =>
+        NonNullType(variable_inner) =>
           variable_type_allowed(variable_inner, expected_type, false)
-        @parser.NamedType(variable_name) => variable_name == expected_name
+        NamedType(variable_name) => variable_name == expected_name
         _ => false
       }
   }
@@ -1036,9 +1032,9 @@ fn visit_fragment(
       next_stack.push(name)
       for selection in fragment.selection_set.items {
         match selection {
-          @parser.FragmentSpreadSelection(spread) =>
+          FragmentSpreadSelection(spread) =>
             visit_fragment(spread.fragment_name, fragments, next_stack)
-          @parser.InlineFragmentSelection(inline_fragment) =>
+          InlineFragmentSelection(inline_fragment) =>
             visit_fragment_spreads(
               inline_fragment.selection_set,
               fragments,
@@ -1060,9 +1056,9 @@ fn visit_fragment_spreads(
 ) -> Unit raise ValidationError {
   for selection in selection_set.items {
     match selection {
-      @parser.FragmentSpreadSelection(spread) =>
+      FragmentSpreadSelection(spread) =>
         visit_fragment(spread.fragment_name, fragments, stack)
-      @parser.InlineFragmentSelection(inline_fragment) =>
+      InlineFragmentSelection(inline_fragment) =>
         visit_fragment_spreads(inline_fragment.selection_set, fragments, stack)
       _ => ()
     }

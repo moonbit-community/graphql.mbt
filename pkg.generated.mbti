@@ -223,7 +223,7 @@ pub type TypeResolver[Ctx] = async (String, GqlValue, Ctx) -> String
 
 // Traits
 pub(open) trait FromGraphQL {
-  from_graphql(InputValue) -> Self raise CoercionError
+  fn from_graphql(InputValue) -> Self raise CoercionError
 }
 pub impl FromGraphQL for Bool
 pub impl FromGraphQL for Int
@@ -235,7 +235,7 @@ pub impl[T : FromGraphQL] FromGraphQL for Array[T]
 pub impl FromGraphQL for Json
 
 pub(open) trait ToGraphQL {
-  to_graphql(Self) -> GqlValue
+  fn to_graphql(Self) -> GqlValue
 }
 pub impl ToGraphQL for Bool
 pub impl ToGraphQL for Int

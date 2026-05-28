@@ -23,18 +23,18 @@ fn parser_value_to_maybe_input(
   variables : Map[String, InputValue],
 ) -> MaybeInput raise CoercionError {
   match value {
-    @parser.Variable(name) =>
+    Variable(name) =>
       match variables.get(name) {
         Some(value) => InputProvided(value)
         None => InputOmitted
       }
-    @parser.IntValue(number) => InputProvided(InputInt(number.as_int64()))
-    @parser.FloatValue(value) => InputProvided(InputFloat(value))
-    @parser.StringValue(value) => InputProvided(InputString(value))
-    @parser.BooleanValue(value) => InputProvided(InputBoolean(value))
-    @parser.NullValue => InputProvided(InputNull)
-    @parser.EnumValue(value) => InputProvided(InputEnum(value))
-    @parser.ListValue(values) => {
+    IntValue(number) => InputProvided(InputInt(number.as_int64()))
+    FloatValue(value) => InputProvided(InputFloat(value))
+    StringValue(value) => InputProvided(InputString(value))
+    BooleanValue(value) => InputProvided(InputBoolean(value))
+    NullValue => InputProvided(InputNull)
+    EnumValue(value) => InputProvided(InputEnum(value))
+    ListValue(values) => {
       let list : Array[InputValue] = []
       for item in values {
         match parser_value_to_maybe_input(item, variables) {
@@ -44,7 +44,7 @@ fn parser_value_to_maybe_input(
       }
       InputProvided(InputList(list))
     }
-    @parser.ObjectValue(fields) => {
+    ObjectValue(fields) => {
       let object : Map[String, InputValue] = {}
       for pair in fields {
         let name = pair.0
@@ -77,20 +77,20 @@ fn coerce_input(
   value : InputValue,
 ) -> InputValue raise CoercionError {
   match gql_type {
-    @parser.NonNullType(inner) =>
+    NonNullType(inner) =>
       match value {
         InputNull =>
           coercion_error("expected non-null \{type_to_string(gql_type)}")
         _ => coerce_input(registry, inner, value)
       }
-    @parser.ListType(inner) =>
+    ListType(inner) =>
       match value {
         InputNull => InputNull
         InputList(values) =>
           InputList(values.map(value => coerce_input(registry, inner, value)))
         _ => InputList([coerce_input(registry, inner, value)])
       }
-    @parser.NamedType(name) =>
+    NamedType(name) =>
       match value {
         InputNull => InputNull
         _ => coerce_named_input(registry, name, value)
@@ -284,14 +284,14 @@ fn coerce_variable_values(
 
 ///|
 fn is_non_null(gql_type : @parser.GqlType) -> Bool {
-  gql_type is @parser.NonNullType(_)
+  gql_type is NonNullType(_)
 }
 
 ///|
 fn type_to_string(gql_type : @parser.GqlType) -> String {
   match gql_type {
-    @parser.NamedType(name) => name
-    @parser.ListType(inner) => "[\{type_to_string(inner)}]"
-    @parser.NonNullType(inner) => type_to_string(inner) + "!"
+    NamedType(name) => name
+    ListType(inner) => "[\{type_to_string(inner)}]"
+    NonNullType(inner) => type_to_string(inner) + "!"
   }
 }
