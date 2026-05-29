@@ -174,7 +174,7 @@ pub fn QueryDocument::to_string(self : QueryDocument) -> String {
 }
 
 ///|
-pub impl Show for QueryDocument with output(
+pub impl Show for QueryDocument with fn output(
   self : QueryDocument,
   logger : &Logger,
 ) -> Unit {
@@ -544,7 +544,7 @@ pub fn SchemaDocument::to_string(self : SchemaDocument) -> String {
 }
 
 ///|
-pub impl Show for SchemaDocument with output(
+pub impl Show for SchemaDocument with fn output(
   self : SchemaDocument,
   logger : &Logger,
 ) -> Unit {

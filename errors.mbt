@@ -16,7 +16,7 @@ pub fn SchemaError::to_string(self : SchemaError) -> String {
 }
 
 ///|
-pub impl Show for SchemaError with output(self, logger) -> Unit {
+pub impl Show for SchemaError with fn output(self, logger) -> Unit {
   logger.write_string(self.to_string())
 }
 
@@ -41,7 +41,7 @@ pub fn CoercionError::to_string(self : CoercionError) -> String {
 }
 
 ///|
-pub impl Show for CoercionError with output(self, logger) -> Unit {
+pub impl Show for CoercionError with fn output(self, logger) -> Unit {
   logger.write_string(self.to_string())
 }
 
@@ -68,7 +68,7 @@ pub fn ValidationError::to_string(self : ValidationError) -> String {
 }
 
 ///|
-pub impl Show for ValidationError with output(self, logger) -> Unit {
+pub impl Show for ValidationError with fn output(self, logger) -> Unit {
   logger.write_string(self.to_string())
 }
 
@@ -95,6 +95,6 @@ pub fn ExecutionError::to_string(self : ExecutionError) -> String {
 }
 
 ///|
-pub impl Show for ExecutionError with output(self, logger) -> Unit {
+pub impl Show for ExecutionError with fn output(self, logger) -> Unit {
   logger.write_string(self.to_string())
 }

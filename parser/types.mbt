@@ -23,7 +23,7 @@ pub fn ParseError::to_string(self : ParseError) -> String {
 }
 
 ///|
-pub impl Show for ParseError with output(self : ParseError, logger : &Logger) -> Unit {
+pub impl Show for ParseError with fn output(self : ParseError, logger : &Logger) -> Unit {
   logger.write_string(self.to_string())
 }
 

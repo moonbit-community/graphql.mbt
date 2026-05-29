@@ -1,11 +1,11 @@
 import {
-  "moonbit-community/graphql" @graphql,
-  "moonbitlang/async" @async,
+  "moonbit-community/graphql",
+  "moonbitlang/async",
   "moonbitlang/async/http" @async_http,
   "moonbitlang/async/io",
-  "moonbitlang/async/socket" @socket,
+  "moonbitlang/async/socket",
   "moonbitlang/async/websocket",
-  "moonbitlang/core/json" @json,
+  "moonbitlang/core/json",
 }
 
 supported_targets = "+native"

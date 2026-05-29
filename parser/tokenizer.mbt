@@ -485,7 +485,7 @@ fn all_digits_after_first(value : String) -> Bool {
 }
 
 ///|
-pub impl Show for TokenKind with output(self : TokenKind, logger : &Logger) -> Unit {
+pub impl Show for TokenKind with fn output(self : TokenKind, logger : &Logger) -> Unit {
   logger.write_string(
     match self {
       TkPunctuator => "TkPunctuator"

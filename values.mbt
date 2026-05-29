@@ -151,22 +151,22 @@ pub fn GqlValue::runtime_type(self : GqlValue, fallback~ : String) -> String {
 ///|
 /// Convert a MoonBit value into a resolver-facing GraphQL runtime value.
 pub(open) trait ToGraphQL {
-  to_graphql(Self) -> GqlValue
+  fn to_graphql(Self) -> GqlValue
 }
 
 ///|
 /// Convert a coerced GraphQL input value into a MoonBit resolver argument type.
 pub(open) trait FromGraphQL {
-  from_graphql(InputValue) -> Self raise CoercionError
+  fn from_graphql(InputValue) -> Self raise CoercionError
 }
 
 ///|
-pub impl ToGraphQL for String with to_graphql(self) {
+pub impl ToGraphQL for String with fn to_graphql(self) {
   GqlString(self)
 }
 
 ///|
-pub impl FromGraphQL for String with from_graphql(value) {
+pub impl FromGraphQL for String with fn from_graphql(value) {
   match value {
     InputString(value) | InputEnum(value) => value
     InputInt(value) => value.to_string()
@@ -175,12 +175,12 @@ pub impl FromGraphQL for String with from_graphql(value) {
 }
 
 ///|
-pub impl ToGraphQL for Bool with to_graphql(self) {
+pub impl ToGraphQL for Bool with fn to_graphql(self) {
   GqlBoolean(self)
 }
 
 ///|
-pub impl FromGraphQL for Bool with from_graphql(value) {
+pub impl FromGraphQL for Bool with fn from_graphql(value) {
   match value {
     InputBoolean(value) => value
     _ => coercion_error("expected Boolean")
@@ -188,12 +188,12 @@ pub impl FromGraphQL for Bool with from_graphql(value) {
 }
 
 ///|
-pub impl ToGraphQL for Int with to_graphql(self) {
+pub impl ToGraphQL for Int with fn to_graphql(self) {
   GqlInt(self)
 }
 
 ///|
-pub impl FromGraphQL for Int with from_graphql(value) {
+pub impl FromGraphQL for Int with fn from_graphql(value) {
   match value {
     InputInt(value) => value.to_int()
     _ => coercion_error("expected Int")
@@ -201,12 +201,12 @@ pub impl FromGraphQL for Int with from_graphql(value) {
 }
 
 ///|
-pub impl ToGraphQL for Int64 with to_graphql(self) {
+pub impl ToGraphQL for Int64 with fn to_graphql(self) {
   GqlInt64(self)
 }
 
 ///|
-pub impl FromGraphQL for Int64 with from_graphql(value) {
+pub impl FromGraphQL for Int64 with fn from_graphql(value) {
   match value {
     InputInt(value) => value
     _ => coercion_error("expected Int64")
@@ -214,12 +214,12 @@ pub impl FromGraphQL for Int64 with from_graphql(value) {
 }
 
 ///|
-pub impl ToGraphQL for Double with to_graphql(self) {
+pub impl ToGraphQL for Double with fn to_graphql(self) {
   GqlFloat(self)
 }
 
 ///|
-pub impl FromGraphQL for Double with from_graphql(value) {
+pub impl FromGraphQL for Double with fn from_graphql(value) {
   match value {
     InputFloat(value) => value
     InputInt(value) => value.to_double()
@@ -228,17 +228,17 @@ pub impl FromGraphQL for Double with from_graphql(value) {
 }
 
 ///|
-pub impl ToGraphQL for Json with to_graphql(self) {
+pub impl ToGraphQL for Json with fn to_graphql(self) {
   gql_value_from_json(self)
 }
 
 ///|
-pub impl FromGraphQL for Json with from_graphql(value) {
+pub impl FromGraphQL for Json with fn from_graphql(value) {
   value.to_json()
 }
 
 ///|
-pub impl[T : ToGraphQL] ToGraphQL for T? with to_graphql(self) {
+pub impl[T : ToGraphQL] ToGraphQL for T? with fn to_graphql(self) {
   match self {
     None => GqlNull
     Some(value) => value.to_graphql()
@@ -246,7 +246,7 @@ pub impl[T : ToGraphQL] ToGraphQL for T? with to_graphql(self) {
 }
 
 ///|
-pub impl[T : FromGraphQL] FromGraphQL for T? with from_graphql(value) {
+pub impl[T : FromGraphQL] FromGraphQL for T? with fn from_graphql(value) {
   match value {
     InputNull => None
     _ => Some(FromGraphQL::from_graphql(value))
@@ -254,12 +254,12 @@ pub impl[T : FromGraphQL] FromGraphQL for T? with from_graphql(value) {
 }
 
 ///|
-pub impl[T : ToGraphQL] ToGraphQL for Array[T] with to_graphql(self) {
+pub impl[T : ToGraphQL] ToGraphQL for Array[T] with fn to_graphql(self) {
   GqlList(self.map(value => value.to_graphql()))
 }
 
 ///|
-pub impl[T : FromGraphQL] FromGraphQL for Array[T] with from_graphql(value) {
+pub impl[T : FromGraphQL] FromGraphQL for Array[T] with fn from_graphql(value) {
   match value {
     InputList(values) => values.map(value => FromGraphQL::from_graphql(value))
     _ => [FromGraphQL::from_graphql(value)]
