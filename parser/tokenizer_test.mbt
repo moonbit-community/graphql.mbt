@@ -1,5 +1,5 @@
 ///|
-using @test {assert_eq}
+using @test {assert_eq, assert_raise}
 
 ///|
 fn token_values(source : String) -> Array[String] raise {
@@ -15,7 +15,7 @@ fn token_kinds(source : String) -> Array[TokenKind] raise {
 
 ///|
 fn assert_tokenize_error(source : String) -> Unit raise {
-  assert_true((try? tokenize(source)) is Err(_))
+  assert_raise(() => tokenize(source))
 }
 
 ///|

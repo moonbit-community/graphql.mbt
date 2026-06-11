@@ -66,9 +66,7 @@ test "query grammar one field roundtrip" {
 
 ///|
 test "query grammar large integer fails" {
-  assert_true(
-    (try? parse_query("{ a(x: 10000000000000000000000000000 }")) is Err(_),
-  )
+  @test.assert_raise(() => parse_query("{ a(x: 10000000000000000000000000000 }"))
 }
 
 ///|
@@ -131,7 +129,7 @@ fn assert_query_error_fixture(name : String) -> Unit raise {
     .collect()
   assert_eq(parts.length(), 2)
   assert_true(!parts[1].is_empty())
-  assert_true((try? parse_query(parts[0])) is Err(_))
+  @test.assert_raise(() => parse_query(parts[0]))
 }
 
 ///|

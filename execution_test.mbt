@@ -253,49 +253,54 @@ async test "validation checks fragments variables inputs and directives" {
 
 ///|
 test "schema compiler rejects duplicate and missing references" {
-  let duplicate : Result[SchemaBuilder[Unit], Error] = try? SchemaBuilder::from_sdl(
-    (
-      #|type Query { a: String }
-      #|type Query { b: String }
-    ),
-  )
-  assert_true(duplicate is Err(_))
-  let missing : Result[SchemaBuilder[Unit], Error] = try? SchemaBuilder::from_sdl(
-    (
-      #|type Query { a: Missing }
-    ),
-  )
-  assert_true(missing is Err(_))
-  let bad_interface : Result[SchemaBuilder[Unit], Error] = try? SchemaBuilder::from_sdl(
-    (
-      #|interface Node { id: ID! }
-      #|type Query implements Node { name: String }
-    ),
-  )
-  assert_true(bad_interface is Err(_))
-  let bad_directive_location : Result[SchemaBuilder[Unit], Error] = try? SchemaBuilder::from_sdl(
-    (
-      #|type Query @deprecated { a: String }
-    ),
-  )
-  assert_true(bad_directive_location is Err(_))
-  let bad_type_resolver : Result[ExecutableSchema[Unit], Error] = try? SchemaBuilder::from_sdl(
+  @test.assert_raise(() => {
+    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
       (
-        #|type Query {
-        #|  ping: String
-        #|}
+        #|type Query { a: String }
+        #|type Query { b: String }
       ),
     )
-    .resolve("Query", "ping", async fn(_info, _args, _ctx) {
-      @async.sleep(0)
-      GqlString("pong")
-    })
-    .resolve_type("Query", async fn(_abstract, _value, _ctx) {
-      @async.sleep(0)
-      "Query"
-    })
-    .finish()
-  assert_true(bad_type_resolver is Err(_))
+  })
+  @test.assert_raise(() => {
+    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+      (
+        #|type Query { a: Missing }
+      ),
+    )
+  })
+  @test.assert_raise(() => {
+    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+      (
+        #|interface Node { id: ID! }
+        #|type Query implements Node { name: String }
+      ),
+    )
+  })
+  @test.assert_raise(() => {
+    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+      (
+        #|type Query @deprecated { a: String }
+      ),
+    )
+  })
+  @test.assert_raise(() => {
+    let _ : ExecutableSchema[Unit] = SchemaBuilder::from_sdl(
+        (
+          #|type Query {
+          #|  ping: String
+          #|}
+        ),
+      )
+      .resolve("Query", "ping", async fn(_info, _args, _ctx) {
+        @async.sleep(0)
+        GqlString("pong")
+      })
+      .resolve_type("Query", async fn(_abstract, _value, _ctx) {
+        @async.sleep(0)
+        "Query"
+      })
+      .finish()
+  })
 }
 
 ///|

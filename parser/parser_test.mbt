@@ -56,9 +56,9 @@ test "tokenizer number and string validation" {
     TkFloatValue,
     TkEof,
   ])
-  assert_true((try? tokenize("01")) is Err(_))
-  assert_true((try? tokenize(".1")) is Err(_))
-  assert_true((try? tokenize("\"unterminated")) is Err(_))
+  @test.assert_raise(() => tokenize("01"))
+  @test.assert_raise(() => tokenize(".1"))
+  @test.assert_raise(() => tokenize("\"unterminated"))
 }
 
 ///|
@@ -234,7 +234,7 @@ test "minify query" {
     minify_query(source),
     "query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{...on B{c d}}}}",
   )
-  assert_true((try? minify_query("query foo { bar; }")) is Err(_))
+  @test.assert_raise(() => minify_query("query foo { bar; }"))
 }
 
 ///|

@@ -3,3 +3,7 @@ import {
   "moonbitlang/async",
   "moonbitlang/async/aqueue",
 }
+
+import {
+  "moonbitlang/core/test",
+} for "test"
