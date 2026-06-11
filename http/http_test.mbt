@@ -157,7 +157,7 @@ async test "graphiql and routing responses" {
 ///|
 async test "websocket graphql transport subscription" {
   let schema = subscription_schema()
-  let server = @async_http.Server::new(@socket.Addr::parse("127.0.0.1:0"))
+  let server = @async_http.Server(@socket.Addr::parse("127.0.0.1:0"))
   defer server.close()
   @async.with_task_group(group => {
     group.spawn_bg(no_wait=true, allow_failure=true, () => {

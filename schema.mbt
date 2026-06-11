@@ -168,7 +168,7 @@ pub(all) struct SubscriptionStream {
 ///|
 /// Create an unbounded subscription stream.
 pub fn SubscriptionStream::new() -> SubscriptionStream {
-  { queue: @aqueue.Queue::new(kind=Unbounded) }
+  { queue: Queue(kind=Unbounded) }
 }
 
 ///|
