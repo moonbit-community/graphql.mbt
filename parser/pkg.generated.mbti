@@ -20,6 +20,9 @@ pub fn tokenize(String) -> Array[Token] raise ParseError
 pub(all) suberror ParseError {
   GraphQLParseError(String, Pos)
 } derive(Eq)
+pub fn ParseError::equal(Self, Self) -> Bool
+pub fn ParseError::not_equal(Self, Self) -> Bool
+pub fn ParseError::output(Self, &Logger) -> Unit
 pub fn ParseError::to_string(Self) -> String
 pub impl Show for ParseError
 
@@ -29,6 +32,9 @@ pub(all) struct Directive {
   name : String
   arguments : Array[(String, Value)]
 } derive(Eq, @debug.Debug)
+pub fn Directive::equal(Self, Self) -> Bool
+pub fn Directive::not_equal(Self, Self) -> Bool
+pub fn Directive::to_repr(Self) -> @debug.Repr
 
 pub(all) struct DirectiveDefinition {
   position : Pos
@@ -38,6 +44,9 @@ pub(all) struct DirectiveDefinition {
   repeatable : Bool
   locations : Array[DirectiveLocation]
 } derive(Eq, @debug.Debug)
+pub fn DirectiveDefinition::equal(Self, Self) -> Bool
+pub fn DirectiveDefinition::not_equal(Self, Self) -> Bool
+pub fn DirectiveDefinition::to_repr(Self) -> @debug.Repr
 
 pub(all) enum DirectiveLocation {
   LocationQuery
@@ -61,8 +70,11 @@ pub(all) enum DirectiveLocation {
   LocationVariableDefinition
 } derive(Eq, @debug.Debug)
 pub fn DirectiveLocation::as_string(Self) -> String
+pub fn DirectiveLocation::equal(Self, Self) -> Bool
 pub fn DirectiveLocation::is_query(Self) -> Bool
 pub fn DirectiveLocation::is_schema(Self) -> Bool
+pub fn DirectiveLocation::not_equal(Self, Self) -> Bool
+pub fn DirectiveLocation::to_repr(Self) -> @debug.Repr
 
 pub(all) struct EnumType {
   position : Pos
@@ -71,6 +83,9 @@ pub(all) struct EnumType {
   directives : Array[Directive]
   values : Array[EnumValue]
 } derive(Eq, @debug.Debug)
+pub fn EnumType::equal(Self, Self) -> Bool
+pub fn EnumType::not_equal(Self, Self) -> Bool
+pub fn EnumType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct EnumTypeExtension {
   position : Pos
@@ -78,6 +93,9 @@ pub(all) struct EnumTypeExtension {
   directives : Array[Directive]
   values : Array[EnumValue]
 } derive(Eq, @debug.Debug)
+pub fn EnumTypeExtension::equal(Self, Self) -> Bool
+pub fn EnumTypeExtension::not_equal(Self, Self) -> Bool
+pub fn EnumTypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) struct EnumValue {
   position : Pos
@@ -85,6 +103,9 @@ pub(all) struct EnumValue {
   name : String
   directives : Array[Directive]
 } derive(Eq, @debug.Debug)
+pub fn EnumValue::equal(Self, Self) -> Bool
+pub fn EnumValue::not_equal(Self, Self) -> Bool
+pub fn EnumValue::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Field {
   position : Pos
@@ -94,6 +115,9 @@ pub(all) struct Field {
   directives : Array[Directive]
   selection_set : SelectionSet
 } derive(Eq, @debug.Debug)
+pub fn Field::equal(Self, Self) -> Bool
+pub fn Field::not_equal(Self, Self) -> Bool
+pub fn Field::to_repr(Self) -> @debug.Repr
 
 pub(all) struct FragmentDefinition {
   position : Pos
@@ -102,18 +126,27 @@ pub(all) struct FragmentDefinition {
   directives : Array[Directive]
   selection_set : SelectionSet
 } derive(Eq, @debug.Debug)
+pub fn FragmentDefinition::equal(Self, Self) -> Bool
+pub fn FragmentDefinition::not_equal(Self, Self) -> Bool
+pub fn FragmentDefinition::to_repr(Self) -> @debug.Repr
 
 pub(all) struct FragmentSpread {
   position : Pos
   fragment_name : String
   directives : Array[Directive]
 } derive(Eq, @debug.Debug)
+pub fn FragmentSpread::equal(Self, Self) -> Bool
+pub fn FragmentSpread::not_equal(Self, Self) -> Bool
+pub fn FragmentSpread::to_repr(Self) -> @debug.Repr
 
 pub(all) enum GqlType {
   NamedType(String)
   ListType(GqlType)
   NonNullType(GqlType)
 } derive(Eq, @debug.Debug)
+pub fn GqlType::equal(Self, Self) -> Bool
+pub fn GqlType::not_equal(Self, Self) -> Bool
+pub fn GqlType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct InlineFragment {
   position : Pos
@@ -121,6 +154,9 @@ pub(all) struct InlineFragment {
   directives : Array[Directive]
   selection_set : SelectionSet
 } derive(Eq, @debug.Debug)
+pub fn InlineFragment::equal(Self, Self) -> Bool
+pub fn InlineFragment::not_equal(Self, Self) -> Bool
+pub fn InlineFragment::to_repr(Self) -> @debug.Repr
 
 pub(all) struct InputObjectType {
   position : Pos
@@ -129,6 +165,9 @@ pub(all) struct InputObjectType {
   directives : Array[Directive]
   fields : Array[InputValue]
 } derive(Eq, @debug.Debug)
+pub fn InputObjectType::equal(Self, Self) -> Bool
+pub fn InputObjectType::not_equal(Self, Self) -> Bool
+pub fn InputObjectType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct InputObjectTypeExtension {
   position : Pos
@@ -136,6 +175,9 @@ pub(all) struct InputObjectTypeExtension {
   directives : Array[Directive]
   fields : Array[InputValue]
 } derive(Eq, @debug.Debug)
+pub fn InputObjectTypeExtension::equal(Self, Self) -> Bool
+pub fn InputObjectTypeExtension::not_equal(Self, Self) -> Bool
+pub fn InputObjectTypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) struct InputValue {
   position : Pos
@@ -145,6 +187,9 @@ pub(all) struct InputValue {
   default_value : Value?
   directives : Array[Directive]
 } derive(Eq, @debug.Debug)
+pub fn InputValue::equal(Self, Self) -> Bool
+pub fn InputValue::not_equal(Self, Self) -> Bool
+pub fn InputValue::to_repr(Self) -> @debug.Repr
 
 pub(all) struct InterfaceType {
   position : Pos
@@ -154,6 +199,9 @@ pub(all) struct InterfaceType {
   directives : Array[Directive]
   fields : Array[SchemaField]
 } derive(Eq, @debug.Debug)
+pub fn InterfaceType::equal(Self, Self) -> Bool
+pub fn InterfaceType::not_equal(Self, Self) -> Bool
+pub fn InterfaceType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct InterfaceTypeExtension {
   position : Pos
@@ -162,6 +210,9 @@ pub(all) struct InterfaceTypeExtension {
   directives : Array[Directive]
   fields : Array[SchemaField]
 } derive(Eq, @debug.Debug)
+pub fn InterfaceTypeExtension::equal(Self, Self) -> Bool
+pub fn InterfaceTypeExtension::not_equal(Self, Self) -> Bool
+pub fn InterfaceTypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Mutation {
   position : Pos
@@ -170,11 +221,17 @@ pub(all) struct Mutation {
   directives : Array[Directive]
   selection_set : SelectionSet
 } derive(Eq, @debug.Debug)
+pub fn Mutation::equal(Self, Self) -> Bool
+pub fn Mutation::not_equal(Self, Self) -> Bool
+pub fn Mutation::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Number {
   value : Int64
 } derive(Eq, @debug.Debug)
 pub fn Number::as_int64(Self) -> Int64
+pub fn Number::equal(Self, Self) -> Bool
+pub fn Number::not_equal(Self, Self) -> Bool
+pub fn Number::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ObjectType {
   position : Pos
@@ -184,6 +241,9 @@ pub(all) struct ObjectType {
   directives : Array[Directive]
   fields : Array[SchemaField]
 } derive(Eq, @debug.Debug)
+pub fn ObjectType::equal(Self, Self) -> Bool
+pub fn ObjectType::not_equal(Self, Self) -> Bool
+pub fn ObjectType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ObjectTypeExtension {
   position : Pos
@@ -192,6 +252,9 @@ pub(all) struct ObjectTypeExtension {
   directives : Array[Directive]
   fields : Array[SchemaField]
 } derive(Eq, @debug.Debug)
+pub fn ObjectTypeExtension::equal(Self, Self) -> Bool
+pub fn ObjectTypeExtension::not_equal(Self, Self) -> Bool
+pub fn ObjectTypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) enum OperationDefinition {
   SelectionSetOperation(SelectionSet)
@@ -199,11 +262,17 @@ pub(all) enum OperationDefinition {
   MutationOperation(Mutation)
   SubscriptionOperation(Subscription)
 } derive(Eq, @debug.Debug)
+pub fn OperationDefinition::equal(Self, Self) -> Bool
+pub fn OperationDefinition::not_equal(Self, Self) -> Bool
+pub fn OperationDefinition::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Pos {
-  line : Int
-  column : Int
+  line : Int32
+  column : Int32
 } derive(Eq, @debug.Debug)
+pub fn Pos::equal(Self, Self) -> Bool
+pub fn Pos::not_equal(Self, Self) -> Bool
+pub fn Pos::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Query {
   position : Pos
@@ -212,16 +281,26 @@ pub(all) struct Query {
   directives : Array[Directive]
   selection_set : SelectionSet
 } derive(Eq, @debug.Debug)
+pub fn Query::equal(Self, Self) -> Bool
+pub fn Query::not_equal(Self, Self) -> Bool
+pub fn Query::to_repr(Self) -> @debug.Repr
 
 pub(all) enum QueryDefinition {
   OperationDefinition(OperationDefinition)
   FragmentDefinition(FragmentDefinition)
 } derive(Eq, @debug.Debug)
+pub fn QueryDefinition::equal(Self, Self) -> Bool
+pub fn QueryDefinition::not_equal(Self, Self) -> Bool
+pub fn QueryDefinition::to_repr(Self) -> @debug.Repr
 
 pub(all) struct QueryDocument {
   definitions : Array[QueryDefinition]
 } derive(Eq, @debug.Debug)
+pub fn QueryDocument::equal(Self, Self) -> Bool
 pub fn QueryDocument::format(Self, style? : Style) -> String
+pub fn QueryDocument::not_equal(Self, Self) -> Bool
+pub fn QueryDocument::output(Self, &Logger) -> Unit
+pub fn QueryDocument::to_repr(Self) -> @debug.Repr
 pub fn QueryDocument::to_string(Self) -> String
 pub impl Show for QueryDocument
 
@@ -231,12 +310,18 @@ pub(all) struct ScalarType {
   name : String
   directives : Array[Directive]
 } derive(Eq, @debug.Debug)
+pub fn ScalarType::equal(Self, Self) -> Bool
+pub fn ScalarType::not_equal(Self, Self) -> Bool
+pub fn ScalarType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ScalarTypeExtension {
   position : Pos
   name : String
   directives : Array[Directive]
 } derive(Eq, @debug.Debug)
+pub fn ScalarTypeExtension::equal(Self, Self) -> Bool
+pub fn ScalarTypeExtension::not_equal(Self, Self) -> Bool
+pub fn ScalarTypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) enum SchemaDefinition {
   SchemaDef(SchemaDefinitionData)
@@ -244,6 +329,9 @@ pub(all) enum SchemaDefinition {
   TypeExt(TypeExtension)
   DirectiveDef(DirectiveDefinition)
 } derive(Eq, @debug.Debug)
+pub fn SchemaDefinition::equal(Self, Self) -> Bool
+pub fn SchemaDefinition::not_equal(Self, Self) -> Bool
+pub fn SchemaDefinition::to_repr(Self) -> @debug.Repr
 
 pub(all) struct SchemaDefinitionData {
   position : Pos
@@ -252,11 +340,18 @@ pub(all) struct SchemaDefinitionData {
   mutation : String?
   subscription : String?
 } derive(Eq, @debug.Debug)
+pub fn SchemaDefinitionData::equal(Self, Self) -> Bool
+pub fn SchemaDefinitionData::not_equal(Self, Self) -> Bool
+pub fn SchemaDefinitionData::to_repr(Self) -> @debug.Repr
 
 pub(all) struct SchemaDocument {
   definitions : Array[SchemaDefinition]
 } derive(Eq, @debug.Debug)
+pub fn SchemaDocument::equal(Self, Self) -> Bool
 pub fn SchemaDocument::format(Self, style? : Style) -> String
+pub fn SchemaDocument::not_equal(Self, Self) -> Bool
+pub fn SchemaDocument::output(Self, &Logger) -> Unit
+pub fn SchemaDocument::to_repr(Self) -> @debug.Repr
 pub fn SchemaDocument::to_string(Self) -> String
 pub impl Show for SchemaDocument
 
@@ -268,24 +363,36 @@ pub(all) struct SchemaField {
   field_type : GqlType
   directives : Array[Directive]
 } derive(Eq, @debug.Debug)
+pub fn SchemaField::equal(Self, Self) -> Bool
+pub fn SchemaField::not_equal(Self, Self) -> Bool
+pub fn SchemaField::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Selection {
   FieldSelection(Field)
   FragmentSpreadSelection(FragmentSpread)
   InlineFragmentSelection(InlineFragment)
 } derive(Eq, @debug.Debug)
+pub fn Selection::equal(Self, Self) -> Bool
+pub fn Selection::not_equal(Self, Self) -> Bool
+pub fn Selection::to_repr(Self) -> @debug.Repr
 
 pub(all) struct SelectionSet {
   span : (Pos, Pos)
   items : Array[Selection]
 } derive(Eq, @debug.Debug)
+pub fn SelectionSet::equal(Self, Self) -> Bool
+pub fn SelectionSet::not_equal(Self, Self) -> Bool
+pub fn SelectionSet::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Style {
-  indent : Int
+  indent : Int32
   multiline_arguments : Bool
 } derive(Eq, @debug.Debug)
 pub fn Style::default() -> Self
-pub fn Style::with_indent(Self, Int) -> Self
+pub fn Style::equal(Self, Self) -> Bool
+pub fn Style::not_equal(Self, Self) -> Bool
+pub fn Style::to_repr(Self) -> @debug.Repr
+pub fn Style::with_indent(Self, Int32) -> Self
 pub fn Style::with_multiline_arguments(Self, Bool) -> Self
 
 pub(all) struct Subscription {
@@ -295,15 +402,21 @@ pub(all) struct Subscription {
   directives : Array[Directive]
   selection_set : SelectionSet
 } derive(Eq, @debug.Debug)
+pub fn Subscription::equal(Self, Self) -> Bool
+pub fn Subscription::not_equal(Self, Self) -> Bool
+pub fn Subscription::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Token {
   kind : TokenKind
   value : String
   position : Pos
-  start_offset : Int
-  end_offset : Int
-  next_offset : Int
+  start_offset : Int32
+  end_offset : Int32
+  next_offset : Int32
 } derive(Eq, @debug.Debug)
+pub fn Token::equal(Self, Self) -> Bool
+pub fn Token::not_equal(Self, Self) -> Bool
+pub fn Token::to_repr(Self) -> @debug.Repr
 
 pub(all) enum TokenKind {
   TkPunctuator
@@ -314,11 +427,19 @@ pub(all) enum TokenKind {
   TkBlockString
   TkEof
 } derive(Eq, @debug.Debug)
+pub fn TokenKind::equal(Self, Self) -> Bool
+pub fn TokenKind::not_equal(Self, Self) -> Bool
+pub fn TokenKind::output(Self, &Logger) -> Unit
+pub fn TokenKind::to_repr(Self) -> @debug.Repr
+pub fn TokenKind::to_string(Self) -> String
 pub impl Show for TokenKind
 
 pub(all) enum TypeCondition {
   On(String)
 } derive(Eq, @debug.Debug)
+pub fn TypeCondition::equal(Self, Self) -> Bool
+pub fn TypeCondition::not_equal(Self, Self) -> Bool
+pub fn TypeCondition::to_repr(Self) -> @debug.Repr
 
 pub(all) enum TypeDefinition {
   ScalarTypeDef(ScalarType)
@@ -328,6 +449,9 @@ pub(all) enum TypeDefinition {
   EnumTypeDef(EnumType)
   InputObjectTypeDef(InputObjectType)
 } derive(Eq, @debug.Debug)
+pub fn TypeDefinition::equal(Self, Self) -> Bool
+pub fn TypeDefinition::not_equal(Self, Self) -> Bool
+pub fn TypeDefinition::to_repr(Self) -> @debug.Repr
 
 pub(all) enum TypeExtension {
   ScalarTypeExt(ScalarTypeExtension)
@@ -337,6 +461,9 @@ pub(all) enum TypeExtension {
   EnumTypeExt(EnumTypeExtension)
   InputObjectTypeExt(InputObjectTypeExtension)
 } derive(Eq, @debug.Debug)
+pub fn TypeExtension::equal(Self, Self) -> Bool
+pub fn TypeExtension::not_equal(Self, Self) -> Bool
+pub fn TypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) struct UnionType {
   position : Pos
@@ -345,6 +472,9 @@ pub(all) struct UnionType {
   directives : Array[Directive]
   types : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn UnionType::equal(Self, Self) -> Bool
+pub fn UnionType::not_equal(Self, Self) -> Bool
+pub fn UnionType::to_repr(Self) -> @debug.Repr
 
 pub(all) struct UnionTypeExtension {
   position : Pos
@@ -352,6 +482,9 @@ pub(all) struct UnionTypeExtension {
   directives : Array[Directive]
   types : Array[String]
 } derive(Eq, @debug.Debug)
+pub fn UnionTypeExtension::equal(Self, Self) -> Bool
+pub fn UnionTypeExtension::not_equal(Self, Self) -> Bool
+pub fn UnionTypeExtension::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Value {
   Variable(String)
@@ -364,6 +497,9 @@ pub(all) enum Value {
   ListValue(Array[Value])
   ObjectValue(Array[(String, Value)])
 } derive(Eq, @debug.Debug)
+pub fn Value::equal(Self, Self) -> Bool
+pub fn Value::not_equal(Self, Self) -> Bool
+pub fn Value::to_repr(Self) -> @debug.Repr
 
 pub(all) struct VariableDefinition {
   position : Pos
@@ -371,8 +507,10 @@ pub(all) struct VariableDefinition {
   var_type : GqlType
   default_value : Value?
 } derive(Eq, @debug.Debug)
+pub fn VariableDefinition::equal(Self, Self) -> Bool
+pub fn VariableDefinition::not_equal(Self, Self) -> Bool
+pub fn VariableDefinition::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
 // Traits
-

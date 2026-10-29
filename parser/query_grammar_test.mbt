@@ -1,6 +1,6 @@
 ///|
-fn parsed_query(source : String) -> QueryDocument raise {
-  parse_query(source)
+fn parsed_query(source : String) -> @parser.QueryDocument raise {
+  @parser.parse_query(source)
 }
 
 ///|
@@ -9,16 +9,16 @@ test "query grammar one field" {
     definitions: [
       OperationDefinition(
         SelectionSetOperation({
-          span: ({ line: 1, column: 1 }, { line: 1, column: 5 }),
+          span: ({ line: 1, column: 1, }, { line: 1, column: 5, }),
           items: [
             FieldSelection({
-              position: { line: 1, column: 3 },
+              position: { line: 1, column: 3, },
               field_alias: None,
               name: "a",
               arguments: [],
               directives: [],
               selection_set: {
-                span: ({ line: 1, column: 3 }, { line: 1, column: 3 }),
+                span: ({ line: 1, column: 3, }, { line: 1, column: 3, }),
                 items: [],
               },
             }),
@@ -35,10 +35,10 @@ test "query grammar builtin values" {
     definitions: [
       OperationDefinition(
         SelectionSetOperation({
-          span: ({ line: 1, column: 1 }, { line: 1, column: 33 }),
+          span: ({ line: 1, column: 1, }, { line: 1, column: 33, }),
           items: [
             FieldSelection({
-              position: { line: 1, column: 3 },
+              position: { line: 1, column: 3, },
               field_alias: None,
               name: "a",
               arguments: [
@@ -48,7 +48,7 @@ test "query grammar builtin values" {
               ],
               directives: [],
               selection_set: {
-                span: ({ line: 1, column: 3 }, { line: 1, column: 3 }),
+                span: ({ line: 1, column: 3, }, { line: 1, column: 3, }),
                 items: [],
               },
             }),
@@ -66,33 +66,37 @@ test "query grammar one field roundtrip" {
 
 ///|
 test "query grammar large integer fails" {
-  @test.assert_raise(() => parse_query("{ a(x: 10000000000000000000000000000 }"))
+  @test.assert_raise(() => {
+    @parser.parse_query("{ a(x: 10000000000000000000000000000 }")
+  })
 }
 
 ///|
 test "query consume single query" {
-  let (query, remainder) = consume_definition("query { a } query { b }")
+  let (query, remainder) = @parser.consume_definition("query { a } query { b }")
   assert_true(query is OperationDefinition(_))
   assert_eq(remainder, "query { b }")
 }
 
 ///|
 test "query consume full text" {
-  let (query, remainder) = consume_definition("query { a }")
+  let (query, remainder) = @parser.consume_definition("query { a }")
   assert_true(query is OperationDefinition(_))
   assert_eq(remainder, "")
 }
 
 ///|
 test "query consume before non graphql remainder" {
-  let (query, remainder) = consume_definition("query { a } where a > 1 => 10.0")
+  let (query, remainder) = @parser.consume_definition(
+    "query { a } where a > 1 => 10.0",
+  )
   assert_true(query is OperationDefinition(_))
   assert_eq(remainder, "where a > 1 => 10.0")
 }
 
 ///|
 test "query consume fails without operation" {
-  try consume_definition("where a > 1 => 10.0") catch {
+  try @parser.consume_definition("where a > 1 => 10.0") catch {
     err => {
       let message = err.to_string()
       assert_true(message.contains("graphql parse error at 1:1"))
@@ -114,7 +118,7 @@ test "query recursion too deep" {
     "[".repeat(25) +
     "]".repeat(25) +
     "}".repeat(30)
-  try parse_query(query) catch {
+  try @parser.parse_query(query) catch {
     err => assert_true(err.to_string().contains("Recursion limit exceeded"))
   } noraise {
     _ => assert_true(false)
@@ -129,7 +133,7 @@ fn assert_query_error_fixture(name : String) -> Unit raise {
     .collect()
   assert_eq(parts.length(), 2)
   assert_true(!parts[1].is_empty())
-  @test.assert_raise(() => parse_query(parts[0]))
+  @test.assert_raise(() => @parser.parse_query(parts[0]))
 }
 
 ///|

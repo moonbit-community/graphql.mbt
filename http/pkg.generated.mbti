@@ -1,0 +1,40 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbit-community/graphql/http"
+
+import {
+  "moonbit-community/graphql",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub async fn[Ctx] handle_request(@graphql.ExecutableSchema[Ctx], @moonbitlang/async/http.Request, String, Ctx, config? : HttpConfig) -> HttpResponse
+
+pub async fn[Ctx] serve(@moonbitlang/async/http.Server, @graphql.ExecutableSchema[Ctx], async (@moonbitlang/async/http.Request) -> Ctx, config? : HttpConfig) -> Unit
+
+// Errors
+
+// Types and methods
+pub(all) struct HttpConfig {
+  graphql_path : String
+  graphiql_path : String?
+  websocket_path : String?
+  max_body_bytes : Int32?
+} derive(Eq, @debug.Debug)
+pub fn HttpConfig::default() -> Self
+pub fn HttpConfig::equal(Self, Self) -> Bool
+pub fn HttpConfig::not_equal(Self, Self) -> Bool
+pub fn HttpConfig::to_repr(Self) -> @debug.Repr
+
+pub(all) struct HttpResponse {
+  status_code : Int32
+  reason : String
+  headers : Map[String, String]
+  body : String
+} derive(Eq, @debug.Debug)
+pub fn HttpResponse::equal(Self, Self) -> Bool
+pub fn HttpResponse::not_equal(Self, Self) -> Bool
+pub fn HttpResponse::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

@@ -1,5 +1,5 @@
 ///|
-let common_test_pos : Pos = { line: 1, column: 1 }
+let common_test_pos : Pos = { line: 1, column: 1, }
 
 ///|
 fn quoted_block(input : String) -> String {
@@ -9,19 +9,19 @@ fn quoted_block(input : String) -> String {
 ///|
 test "number from int and to int64 conversion" {
   assert_eq(
-    Number::{ value: Int64::from_int(1) }.as_int64(),
+    Number::{ value: Int64::from_int(1), }.as_int64(),
     Int64::from_int(1),
   )
   assert_eq(
-    Number::{ value: Int64::from_int(584) }.as_int64(),
+    Number::{ value: Int64::from_int(584), }.as_int64(),
     Int64::from_int(584),
   )
   assert_eq(
-    Number::{ value: Int64::from_int(-2147483648) }.as_int64(),
+    Number::{ value: Int64::from_int(-2147483648), }.as_int64(),
     Int64::from_int(-2147483648),
   )
   assert_eq(
-    Number::{ value: Int64::from_int(2147483647) }.as_int64(),
+    Number::{ value: Int64::from_int(2147483647), }.as_int64(),
     Int64::from_int(2147483647),
   )
 }

@@ -58,18 +58,19 @@ fn request(
   path : String,
   content_type? : String,
 ) -> @async_http.Request {
-  let headers : Map[String, String] = {}
+  let headers : @async_http.Headers = Map([])
   match content_type {
-    Some(value) => headers["content-type"] = value
+    Some(value) =>
+      headers[@async_http.CaseInsensitiveString("content-type")] = value
     None => ()
   }
-  { meth, path, headers }
+  { meth, path, headers, }
 }
 
 ///|
 async test "json post and application graphql post" {
   let schema = test_schema()
-  let json_post = handle_request(
+  let json_post = @http.handle_request(
     schema,
     request(Post, "/graphql", content_type="application/json"),
     "{\"query\":\"query($name:String!){hello(name:$name)}\",\"variables\":{\"name\":\"Ada\"}}",
@@ -77,9 +78,11 @@ async test "json post and application graphql post" {
   )
   assert_eq(json_post.status_code, 200)
   assert_eq(json_post.body, "{\"data\":{\"hello\":\"hello Ada\"}}")
-  let graphql_post = handle_request(
+  let mixed_case_request = request(Post, "/graphql")
+  mixed_case_request.headers[@async_http.CaseInsensitiveString("CoNtEnT-TyPe")] = "application/graphql"
+  let graphql_post = @http.handle_request(
     schema,
-    request(Post, "/graphql", content_type="application/graphql"),
+    mixed_case_request,
     "query { hello(name: \"MoonBit\") }",
     (),
   )
@@ -90,7 +93,7 @@ async test "json post and application graphql post" {
 ///|
 async test "get query supports percent decoding" {
   let schema = test_schema()
-  let response = handle_request(
+  let response = @http.handle_request(
     schema,
     request(Get, "/graphql?query=%7B%20hello%20%7D"),
     "",
@@ -103,7 +106,7 @@ async test "get query supports percent decoding" {
 ///|
 async test "batch and error status handling" {
   let schema = test_schema()
-  let batch = handle_request(
+  let batch = @http.handle_request(
     schema,
     request(Post, "/graphql", content_type="application/json"),
     "[{\"query\":\"{ hello }\"},{\"query\":\"{ hello(name: \\\"Ada\\\") }\"}]",
@@ -114,21 +117,21 @@ async test "batch and error status handling" {
     batch.body,
     "[{\"data\":{\"hello\":\"hello world\"}},{\"data\":{\"hello\":\"hello Ada\"}}]",
   )
-  let empty_batch = handle_request(
+  let empty_batch = @http.handle_request(
     schema,
     request(Post, "/graphql", content_type="application/json"),
     "[]",
     (),
   )
   assert_eq(empty_batch.status_code, 400)
-  let invalid_json = handle_request(
+  let invalid_json = @http.handle_request(
     schema,
     request(Post, "/graphql", content_type="application/json"),
     "{",
     (),
   )
   assert_eq(invalid_json.status_code, 400)
-  let invalid_field = handle_request(
+  let invalid_field = @http.handle_request(
     schema,
     request(Post, "/graphql", content_type="application/json"),
     "{\"query\":\"{ missing }\"}",
@@ -140,12 +143,12 @@ async test "batch and error status handling" {
 ///|
 async test "graphiql and routing responses" {
   let schema = test_schema()
-  let graphiql = handle_request(schema, request(Get, "/graphiql"), "", ())
+  let graphiql = @http.handle_request(schema, request(Get, "/graphiql"), "", ())
   assert_eq(graphiql.status_code, 200)
   assert_true(graphiql.headers["content-type"].contains("text/html"))
-  let not_found = handle_request(schema, request(Get, "/nope"), "", ())
+  let not_found = @http.handle_request(schema, request(Get, "/nope"), "", ())
   assert_eq(not_found.status_code, 404)
-  let method_response = handle_request(
+  let method_response = @http.handle_request(
     schema,
     request(Delete, "/graphql"),
     "",
@@ -161,7 +164,12 @@ async test "websocket graphql transport subscription" {
   defer server.close()
   @async.with_task_group(group => {
     group.spawn_bg(no_wait=true, allow_failure=true, () => {
-      serve(server, schema, _request => (), config=HttpConfig::default())
+      @http.serve(
+        server,
+        schema,
+        _request => (),
+        config=@http.HttpConfig::default(),
+      )
     })
     @async.sleep(50)
     let url = "ws://127.0.0.1:\{server.addr.port()}/graphql"

@@ -27,7 +27,7 @@ pub fn InputValue::to_json(self : InputValue) -> Json {
     InputEnum(value) => Json::string(value)
     InputList(values) => Json::array(values.map(value => value.to_json()))
     InputObject(fields) => {
-      let object : Map[String, Json] = {}
+      let object : Map[String, Json] = Map([])
       for name, value in fields.iter2() {
         object[name] = value.to_json()
       }
@@ -59,7 +59,7 @@ pub fn InputValue::from_json(json : Json) -> InputValue {
     Array(values) =>
       InputList(values.map(value => InputValue::from_json(value)))
     Object(fields) => {
-      let object : Map[String, InputValue] = {}
+      let object : Map[String, InputValue] = Map([])
       for name, value in fields.iter2() {
         object[name] = InputValue::from_json(value)
       }
@@ -78,7 +78,7 @@ pub(all) enum GqlValue {
   GqlNull
   GqlString(String)
   GqlBoolean(Bool)
-  GqlInt(Int)
+  GqlInt(Int32)
   GqlInt64(Int64)
   GqlFloat(Double)
   GqlEnum(String)
@@ -118,7 +118,7 @@ pub fn GqlValue::to_json(self : GqlValue) -> Json {
     GqlEnum(value) => Json::string(value)
     GqlList(values) => Json::array(values.map(value => value.to_json()))
     GqlObject(fields) | GqlTypedObject(_, fields) => {
-      let object : Map[String, Json] = {}
+      let object : Map[String, Json] = Map([])
       for name, value in fields.iter2() {
         object[name] = value.to_json()
       }
@@ -188,12 +188,12 @@ pub impl FromGraphQL for Bool with fn from_graphql(value) {
 }
 
 ///|
-pub impl ToGraphQL for Int with fn to_graphql(self) {
+pub impl ToGraphQL for Int32 with fn to_graphql(self) {
   GqlInt(self)
 }
 
 ///|
-pub impl FromGraphQL for Int with fn from_graphql(value) {
+pub impl FromGraphQL for Int32 with fn from_graphql(value) {
   match value {
     InputInt(value) => value.to_int()
     _ => coercion_error("expected Int")
@@ -279,7 +279,7 @@ fn gql_value_from_json(json : Json) -> GqlValue {
     String(value) => GqlString(value)
     Array(values) => GqlList(values.map(value => gql_value_from_json(value)))
     Object(fields) => {
-      let object : Map[String, GqlValue] = {}
+      let object : Map[String, GqlValue] = Map([])
       for name, value in fields.iter2() {
         object[name] = gql_value_from_json(value)
       }
@@ -292,7 +292,7 @@ fn gql_value_from_json(json : Json) -> GqlValue {
 /// Segment in a GraphQL response error path.
 pub(all) enum PathSegment {
   PathField(String)
-  PathIndex(Int)
+  PathIndex(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -307,14 +307,14 @@ pub fn PathSegment::to_json(self : PathSegment) -> Json {
 ///|
 /// 1-based source location used in GraphQL errors.
 pub(all) struct SourceLocation {
-  line : Int
-  column : Int
+  line : Int32
+  column : Int32
 } derive(Eq, Debug)
 
 ///|
 /// Convert a source location into the JSON representation used in errors.
 pub fn SourceLocation::to_json(self : SourceLocation) -> Json {
-  Json::object({ "line": self.line.to_json(), "column": self.column.to_json() })
+  Json::object({ "line": Json(self.line), "column": Json(self.column) })
 }
 
 ///|
@@ -333,7 +333,7 @@ pub fn GraphQLError::new(
   path? : Array[PathSegment],
   locations? : Array[SourceLocation],
 ) -> GraphQLError {
-  { message, path: path.unwrap_or([]), locations: locations.unwrap_or([]) }
+  { message, path: path.unwrap_or([]), locations: locations.unwrap_or([]), }
 }
 
 ///|
@@ -368,7 +368,7 @@ pub fn GraphQLRequest::new(
   operation_name? : String,
   variables? : Map[String, InputValue],
 ) -> GraphQLRequest {
-  { query, operation_name, variables: variables.unwrap_or({}) }
+  { query, operation_name, variables: variables.unwrap_or({}), }
 }
 
 ///|
@@ -384,19 +384,19 @@ pub(all) struct GraphQLResponse {
 ///|
 /// Create a response containing only `data`.
 pub fn GraphQLResponse::data(data : GqlValue) -> GraphQLResponse {
-  { data: Some(data), errors: [] }
+  { data: Some(data), errors: [], }
 }
 
 ///|
 /// Create a response containing a single top-level error message.
 pub fn GraphQLResponse::error(message : String) -> GraphQLResponse {
-  { data: None, errors: [GraphQLError::new(message)] }
+  { data: None, errors: [GraphQLError::new(message)], }
 }
 
 ///|
 /// Convert the response into the standard GraphQL JSON envelope.
 pub fn GraphQLResponse::to_json(self : GraphQLResponse) -> Json {
-  let object : Map[String, Json] = {}
+  let object : Map[String, Json] = Map([])
   match self.data {
     Some(data) => object["data"] = data.to_json()
     None => ()

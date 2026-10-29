@@ -4,15 +4,15 @@ suberror ResolverFailure {
 } derive(Debug)
 
 ///|
-fn luke() -> GqlValue {
-  GqlValue::typed_object("Human", [
+fn luke() -> @graphql.GqlValue {
+  @graphql.GqlValue::typed_object("Human", [
     ("id", GqlString("1000")),
     ("name", GqlString("Luke Skywalker")),
     ("homePlanet", GqlString("Tatooine")),
     (
       "friends",
       GqlList([
-        GqlValue::typed_object("Droid", [
+        @graphql.GqlValue::typed_object("Droid", [
           ("id", GqlString("2001")),
           ("name", GqlString("R2-D2")),
           ("primaryFunction", GqlString("Astromech")),
@@ -24,8 +24,8 @@ fn luke() -> GqlValue {
 }
 
 ///|
-fn artoo() -> GqlValue {
-  GqlValue::typed_object("Droid", [
+fn artoo() -> @graphql.GqlValue {
+  @graphql.GqlValue::typed_object("Droid", [
     ("id", GqlString("2001")),
     ("name", GqlString("R2-D2")),
     ("primaryFunction", GqlString("Astromech")),
@@ -82,8 +82,10 @@ fn star_wars_sdl() -> String {
 }
 
 ///|
-fn star_wars_schema() -> ExecutableSchema[Unit] raise SchemaError {
-  let builder : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(star_wars_sdl())
+fn star_wars_schema() -> @graphql.ExecutableSchema[Unit] raise @graphql.SchemaError {
+  let builder : @graphql.SchemaBuilder[Unit] = @graphql.SchemaBuilder::from_sdl(
+    star_wars_sdl(),
+  )
   builder
   .resolve("Query", "hero", async fn(_info, args, _ctx) {
     @async.sleep(0)
@@ -120,7 +122,7 @@ fn star_wars_schema() -> ExecutableSchema[Unit] raise SchemaError {
 ///|
 async test "execute variables fragments directives and interfaces" {
   let schema = star_wars_schema()
-  let request = GraphQLRequest::new(
+  let request = @graphql.GraphQLRequest::new(
     (
       #|query Hero($episode: Episode!, $withFriends: Boolean!) {
       #|  hero(episode: $episode) {
@@ -142,7 +144,7 @@ async test "execute variables fragments directives and interfaces" {
       "withFriends": InputBoolean(true),
     },
   )
-  let response = execute(schema, request, ())
+  let response = @graphql.execute(schema, request, ())
   inspect(
     response.to_json().stringify(),
     content=(
@@ -154,7 +156,7 @@ async test "execute variables fragments directives and interfaces" {
 ///|
 async test "execute input objects aliases and union fragments" {
   let schema = star_wars_schema()
-  let request = GraphQLRequest::new(
+  let request = @graphql.GraphQLRequest::new(
     (
       #|query Search($input: HeroInput!) {
       #|  jedi: heroByInput(input: $input) {
@@ -174,7 +176,7 @@ async test "execute input objects aliases and union fragments" {
     ),
     variables={ "input": InputObject({ "episode": InputEnum("JEDI") }) },
   )
-  let response = execute(schema, request, ())
+  let response = @graphql.execute(schema, request, ())
   inspect(
     response.to_json().stringify(),
     content=(
@@ -186,14 +188,18 @@ async test "execute input objects aliases and union fragments" {
 ///|
 async test "validation and resolver errors are reported" {
   let schema = star_wars_schema()
-  let invalid = execute(
+  let invalid = @graphql.execute(
     schema,
-    GraphQLRequest::new("query { hero { unknownField } }"),
+    @graphql.GraphQLRequest::new("query { hero { unknownField } }"),
     (),
   )
   assert_true(invalid.data == None)
   assert_true(invalid.errors[0].message.contains("unknown field"))
-  let failed = execute(schema, GraphQLRequest::new("query { broken }"), ())
+  let failed = @graphql.execute(
+    schema,
+    @graphql.GraphQLRequest::new("query { broken }"),
+    (),
+  )
   assert_true(failed.data != None)
   assert_true(!failed.errors.is_empty())
 }
@@ -201,9 +207,9 @@ async test "validation and resolver errors are reported" {
 ///|
 async test "validation checks fragments variables inputs and directives" {
   let schema = star_wars_schema()
-  let bad_fragment = execute(
+  let bad_fragment = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       "query { hero { ...Bad } } fragment Bad on Human { missing }",
     ),
     (),
@@ -211,9 +217,9 @@ async test "validation checks fragments variables inputs and directives" {
   assert_true(
     bad_fragment.errors[0].message.contains("unknown field `Human.missing`"),
   )
-  let unused_variable = execute(
+  let unused_variable = @graphql.execute(
     schema,
-    GraphQLRequest::new("query($episode: Episode) { hero { id } }"),
+    @graphql.GraphQLRequest::new("query($episode: Episode) { hero { id } }"),
     (),
   )
   assert_true(
@@ -221,9 +227,9 @@ async test "validation checks fragments variables inputs and directives" {
       "variable `$episode` is never used",
     ),
   )
-  let mismatched_variable = execute(
+  let mismatched_variable = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       "query($episode: String!) { hero(episode: $episode) { id } }",
     ),
     (),
@@ -233,9 +239,9 @@ async test "validation checks fragments variables inputs and directives" {
       "cannot be used as `Episode`",
     ),
   )
-  let bad_input = execute(
+  let bad_input = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       "{ heroByInput(input: { episode: JEDI extra: true }) { id } }",
     ),
     (),
@@ -243,9 +249,9 @@ async test "validation checks fragments variables inputs and directives" {
   assert_true(
     bad_input.errors[0].message.contains("unknown field `HeroInput.extra`"),
   )
-  let bad_directive = execute(
+  let bad_directive = @graphql.execute(
     schema,
-    GraphQLRequest::new("query @skip(if: true) { hero { id } }"),
+    @graphql.GraphQLRequest::new("query @skip(if: true) { hero { id } }"),
     (),
   )
   assert_true(bad_directive.errors[0].message.contains("not allowed at QUERY"))
@@ -254,7 +260,7 @@ async test "validation checks fragments variables inputs and directives" {
 ///|
 test "schema compiler rejects duplicate and missing references" {
   @test.assert_raise(() => {
-    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+    let _ : @graphql.SchemaBuilder[Unit] = @graphql.SchemaBuilder::from_sdl(
       (
         #|type Query { a: String }
         #|type Query { b: String }
@@ -262,14 +268,14 @@ test "schema compiler rejects duplicate and missing references" {
     )
   })
   @test.assert_raise(() => {
-    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+    let _ : @graphql.SchemaBuilder[Unit] = @graphql.SchemaBuilder::from_sdl(
       (
         #|type Query { a: Missing }
       ),
     )
   })
   @test.assert_raise(() => {
-    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+    let _ : @graphql.SchemaBuilder[Unit] = @graphql.SchemaBuilder::from_sdl(
       (
         #|interface Node { id: ID! }
         #|type Query implements Node { name: String }
@@ -277,14 +283,14 @@ test "schema compiler rejects duplicate and missing references" {
     )
   })
   @test.assert_raise(() => {
-    let _ : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(
+    let _ : @graphql.SchemaBuilder[Unit] = @graphql.SchemaBuilder::from_sdl(
       (
         #|type Query @deprecated { a: String }
       ),
     )
   })
   @test.assert_raise(() => {
-    let _ : ExecutableSchema[Unit] = SchemaBuilder::from_sdl(
+    let _ : @graphql.ExecutableSchema[Unit] = @graphql.SchemaBuilder::from_sdl(
         (
           #|type Query {
           #|  ping: String
@@ -306,11 +312,11 @@ test "schema compiler rejects duplicate and missing references" {
 ///|
 async test "introspection exposes schema metadata" {
   let schema = star_wars_schema()
-  let direct = introspect(schema, format=TypeNamesOnly)
+  let direct = @graphql.introspect(schema, format=TypeNamesOnly)
   assert_true(direct.stringify().contains("Character"))
-  let response = execute(
+  let response = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       (
         #|query {
         #|  __schema
@@ -320,7 +326,7 @@ async test "introspection exposes schema metadata" {
     (),
   )
   assert_true(response.to_json().stringify().contains("queryType"))
-  let disabled = SchemaBuilder::from_sdl(
+  let disabled = @graphql.SchemaBuilder::from_sdl(
       (
         #|type Query {
         #|  ping: String!
@@ -333,7 +339,11 @@ async test "introspection exposes schema metadata" {
     })
     .disable_introspection(true)
     .finish()
-  let denied = execute(disabled, GraphQLRequest::new("query { __schema }"), ())
+  let denied = @graphql.execute(
+    disabled,
+    @graphql.GraphQLRequest::new("query { __schema }"),
+    (),
+  )
   assert_true(!denied.errors.is_empty())
 }
 
@@ -352,22 +362,26 @@ async test "subscription resolver returns queue backed stream" {
     #|type Subscription {
     #|  count: Int!
     #|}
-  let builder : SchemaBuilder[Unit] = SchemaBuilder::from_sdl(sdl)
+  let builder : @graphql.SchemaBuilder[Unit] = @graphql.SchemaBuilder::from_sdl(
+    sdl,
+  )
   let schema = builder
     .resolve("Query", "ping", async fn(_info, _args, _ctx) {
       @async.sleep(0)
       GqlString("pong")
     })
     .subscribe("Subscription", "count", async fn(_info, _args, _ctx) {
-      let stream = SubscriptionStream::new()
-      stream.publish(GraphQLResponse::data(GqlObject({ "count": GqlInt(1) })))
+      let stream = @graphql.SubscriptionStream::new()
+      stream.publish(
+        @graphql.GraphQLResponse::data(GqlObject({ "count": GqlInt(1) })),
+      )
       stream.close()
       stream
     })
     .finish()
-  let result = start_subscription(
+  let result = @graphql.start_subscription(
     schema,
-    GraphQLRequest::new("subscription { count }"),
+    @graphql.GraphQLRequest::new("subscription { count }"),
     (),
   )
   match result {
@@ -383,8 +397,8 @@ async test "subscription resolver returns queue backed stream" {
 
 ///|
 async test "merged fields execute resolver once and keep nested selections" {
-  let calls : Array[Int] = []
-  let schema = SchemaBuilder::from_sdl(
+  let calls : Array[Int32] = []
+  let schema = @graphql.SchemaBuilder::from_sdl(
       (
         #|type Query {
         #|  user: User!
@@ -399,12 +413,15 @@ async test "merged fields execute resolver once and keep nested selections" {
     .resolve("Query", "user", async fn(_info, _args, _ctx) {
       @async.sleep(0)
       calls.push(1)
-      GqlValue::object([("id", GqlString("u1")), ("name", GqlString("Ada"))])
+      @graphql.GqlValue::object([
+        ("id", GqlString("u1")),
+        ("name", GqlString("Ada")),
+      ])
     })
     .finish()
-  let response = execute(
+  let response = @graphql.execute(
     schema,
-    GraphQLRequest::new("{ user { name } user { id } }"),
+    @graphql.GraphQLRequest::new("{ user { name } user { id } }"),
     (),
   )
   assert_eq(calls.length(), 1)
@@ -416,7 +433,7 @@ async test "merged fields execute resolver once and keep nested selections" {
 
 ///|
 async test "overlapping field merge validation checks arguments and exclusivity" {
-  let schema = SchemaBuilder::from_sdl(
+  let schema = @graphql.SchemaBuilder::from_sdl(
       (
         #|type Query {
         #|  label(id: ID): String
@@ -441,22 +458,26 @@ async test "overlapping field merge validation checks arguments and exclusivity"
     .resolve("Query", "search", async fn(_info, _args, _ctx) {
       @async.sleep(0)
       GqlList([
-        GqlValue::typed_object("Human", [("homePlanet", GqlString("Tatooine"))]),
-        GqlValue::typed_object("Droid", [
+        @graphql.GqlValue::typed_object("Human", [
+          ("homePlanet", GqlString("Tatooine")),
+        ]),
+        @graphql.GqlValue::typed_object("Droid", [
           ("primaryFunction", GqlString("Astromech")),
         ]),
       ])
     })
     .finish()
-  let conflict = execute(
+  let conflict = @graphql.execute(
     schema,
-    GraphQLRequest::new("{ same: label(id: \"1\") same: label(id: \"2\") }"),
+    @graphql.GraphQLRequest::new(
+      "{ same: label(id: \"1\") same: label(id: \"2\") }",
+    ),
     (),
   )
   assert_true(conflict.errors[0].message.contains("conflicting arguments"))
-  let exclusive = execute(
+  let exclusive = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       (
         #|{
         #|  search {
@@ -476,7 +497,7 @@ async test "overlapping field merge validation checks arguments and exclusivity"
 
 ///|
 async test "operation and variable defaults follow GraphQL omission semantics" {
-  let schema = SchemaBuilder::from_sdl(
+  let schema = @graphql.SchemaBuilder::from_sdl(
       (
         #|input HeroInput {
         #|  episode: String = "NEWHOPE"
@@ -512,35 +533,38 @@ async test "operation and variable defaults follow GraphQL omission semantics" {
       }
     })
     .finish()
-  let omitted = execute(
+  let omitted = @graphql.execute(
     schema,
-    GraphQLRequest::new("query($name: String) { maybe(name: $name) }"),
+    @graphql.GraphQLRequest::new("query($name: String) { maybe(name: $name) }"),
     (),
   )
   assert_eq(omitted.to_json().stringify(), "{\"data\":{\"maybe\":\"world\"}}")
-  let variable_default = execute(
+  let variable_default = @graphql.execute(
     schema,
-    GraphQLRequest::new("query($name: String = \"Ada\") { maybe(name: $name) }"),
+    @graphql.GraphQLRequest::new(
+      "query($name: String = \"Ada\") { maybe(name: $name) }",
+    ),
     (),
   )
   assert_eq(
     variable_default.to_json().stringify(),
     "{\"data\":{\"maybe\":\"Ada\"}}",
   )
-  let explicit_null = execute(
+  let explicit_null = @graphql.execute(
     schema,
-    GraphQLRequest::new("query($name: String) { maybe(name: $name) }", variables={
-      "name": InputNull,
-    }),
+    @graphql.GraphQLRequest::new(
+      "query($name: String) { maybe(name: $name) }",
+      variables={ "name": InputNull },
+    ),
     (),
   )
   assert_eq(
     explicit_null.to_json().stringify(),
     "{\"data\":{\"maybe\":\"null\"}}",
   )
-  let input_default = execute(
+  let input_default = @graphql.execute(
     schema,
-    GraphQLRequest::new("{ hero(input: {}) }"),
+    @graphql.GraphQLRequest::new("{ hero(input: {}) }"),
     (),
   )
   assert_eq(
@@ -552,9 +576,9 @@ async test "operation and variable defaults follow GraphQL omission semantics" {
 ///|
 async test "anonymous operation must be alone" {
   let schema = star_wars_schema()
-  let response = execute(
+  let response = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       "query Named { hero { id } } { hero { id } }",
       operation_name="Named",
     ),
@@ -582,10 +606,10 @@ async test "abstract type resolver handles untyped objects and rejects invalid r
     #|type Query {
     #|  hero: Character
     #|}
-  let schema = SchemaBuilder::from_sdl(sdl)
+  let schema = @graphql.SchemaBuilder::from_sdl(sdl)
     .resolve("Query", "hero", async fn(_info, _args, _ctx) {
       @async.sleep(0)
-      GqlValue::object([
+      @graphql.GqlValue::object([
         ("name", GqlString("Luke")),
         ("homePlanet", GqlString("Tatooine")),
       ])
@@ -595,9 +619,9 @@ async test "abstract type resolver handles untyped objects and rejects invalid r
       "Human"
     })
     .finish()
-  let response = execute(
+  let response = @graphql.execute(
     schema,
-    GraphQLRequest::new(
+    @graphql.GraphQLRequest::new(
       "{ hero { __typename name ... on Human { homePlanet } } }",
     ),
     (),
@@ -606,33 +630,33 @@ async test "abstract type resolver handles untyped objects and rejects invalid r
     response.to_json().stringify(),
     "{\"data\":{\"hero\":{\"__typename\":\"Human\",\"name\":\"Luke\",\"homePlanet\":\"Tatooine\"}}}",
   )
-  let invalid = SchemaBuilder::from_sdl(sdl)
+  let invalid = @graphql.SchemaBuilder::from_sdl(sdl)
     .resolve("Query", "hero", async fn(_info, _args, _ctx) {
       @async.sleep(0)
-      GqlValue::object([("name", GqlString("R2-D2"))])
+      @graphql.GqlValue::object([("name", GqlString("R2-D2"))])
     })
     .resolve_type("Character", async fn(_abstract, _value, _ctx) {
       @async.sleep(0)
       "Droid"
     })
     .finish()
-  let invalid_response = execute(
+  let invalid_response = @graphql.execute(
     invalid,
-    GraphQLRequest::new("{ hero { __typename name } }"),
+    @graphql.GraphQLRequest::new("{ hero { __typename name } }"),
     (),
   )
   assert_true(
     invalid_response.errors[0].message.contains("not valid for abstract type"),
   )
-  let missing = SchemaBuilder::from_sdl(sdl)
+  let missing = @graphql.SchemaBuilder::from_sdl(sdl)
     .resolve("Query", "hero", async fn(_info, _args, _ctx) {
       @async.sleep(0)
-      GqlValue::object([("name", GqlString("Luke"))])
+      @graphql.GqlValue::object([("name", GqlString("Luke"))])
     })
     .finish()
-  let missing_response = execute(
+  let missing_response = @graphql.execute(
     missing,
-    GraphQLRequest::new("{ hero { __typename name } }"),
+    @graphql.GraphQLRequest::new("{ hero { __typename name } }"),
     (),
   )
   assert_true(

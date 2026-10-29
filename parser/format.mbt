@@ -2,12 +2,12 @@
 priv struct Formatter {
   buf : StringBuilder
   style : Style
-  mut indent : Int
+  mut indent : Int32
 }
 
 ///|
 fn Formatter::new(style : Style) -> Formatter {
-  { buf: StringBuilder::new(size_hint=1024), style, indent: 0 }
+  { buf: StringBuilder(size_hint=1024), style, indent: 0, }
 }
 
 ///|
@@ -160,7 +160,7 @@ fn Formatter::write_quoted(self : Formatter, value : String) -> Unit {
 /// Format an executable GraphQL document with a stable canonical layout.
 pub fn QueryDocument::format(
   self : QueryDocument,
-  style? : Style = Style::default(),
+  style~ : Style = Style::default(),
 ) -> String {
   let formatter = Formatter::new(style)
   self.display(formatter)
@@ -263,7 +263,7 @@ fn display_query_arguments(
     formatter.write(arguments[0].0)
     formatter.write(": ")
     arguments[0].1.display(formatter)
-    for arg in arguments.view(start=1) {
+    for arg in arguments.exact_view(start=1) {
       formatter.delineate_argument()
       formatter.start_argument()
       formatter.write(arg.0)
@@ -373,7 +373,7 @@ fn display_variable_definitions(
   if !variables.is_empty() {
     formatter.write("(")
     variables[0].display(formatter)
-    for variable in variables.view(start=1) {
+    for variable in variables.exact_view(start=1) {
       formatter.write(", ")
       variable.display(formatter)
     }
@@ -434,7 +434,7 @@ fn Value::display(self : Value, formatter : Formatter) -> Unit {
       if !items.is_empty() {
         formatter.start_argument()
         items[0].display(formatter)
-        for item in items.view(start=1) {
+        for item in items.exact_view(start=1) {
           formatter.delineate_argument()
           formatter.start_argument()
           item.display(formatter)
@@ -530,7 +530,7 @@ fn display_directives(
 /// Format an SDL document with a stable canonical layout.
 pub fn SchemaDocument::format(
   self : SchemaDocument,
-  style? : Style = Style::default(),
+  style~ : Style = Style::default(),
 ) -> String {
   let formatter = Formatter::new(style)
   self.display(formatter)
@@ -689,7 +689,7 @@ fn display_implements(
   if !interfaces.is_empty() {
     formatter.write(" implements ")
     formatter.write(interfaces[0])
-    for name in interfaces.view(start=1) {
+    for name in interfaces.exact_view(start=1) {
       formatter.write(" & ")
       formatter.write(name)
     }
@@ -750,7 +750,7 @@ fn display_input_arguments(
   if !arguments.is_empty() {
     formatter.write("(")
     arguments[0].display(formatter)
-    for arg in arguments.view(start=1) {
+    for arg in arguments.exact_view(start=1) {
       formatter.write(", ")
       arg.display(formatter)
     }
@@ -823,7 +823,7 @@ fn display_union_members(types : Array[String], formatter : Formatter) -> Unit {
   if !types.is_empty() {
     formatter.write(" = ")
     formatter.write(types[0])
-    for typ in types.view(start=1) {
+    for typ in types.exact_view(start=1) {
       formatter.write(" | ")
       formatter.write(typ)
     }
@@ -952,7 +952,7 @@ fn DirectiveDefinition::display(
   if !self.locations.is_empty() {
     formatter.write(" on ")
     formatter.write(self.locations[0].as_string())
-    for location in self.locations.view(start=1) {
+    for location in self.locations.exact_view(start=1) {
       formatter.write(" | ")
       formatter.write(location.as_string())
     }

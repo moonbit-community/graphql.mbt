@@ -2,12 +2,12 @@
 /// Shared recursive-descent parser over pre-tokenized GraphQL input.
 priv struct Parser {
   tokens : Array[Token]
-  mut index : Int
+  mut index : Int32
 }
 
 ///|
 fn Parser::new(source : String) -> Parser raise ParseError {
-  { tokens: tokenize(source), index: 0 }
+  { tokens: tokenize(source), index: 0, }
 }
 
 ///|
@@ -116,7 +116,7 @@ fn Parser::expect_eof(self : Parser) -> Unit raise ParseError {
 
 ///|
 fn empty_selection_set(position : Pos) -> SelectionSet {
-  { span: (position, position), items: [] }
+  { span: (position, position), items: [], }
 }
 
 ///|
@@ -173,7 +173,7 @@ fn Parser::parse_directives(self : Parser) -> Array[Directive] raise ParseError 
     }
     let (name, pos) = self.expect_name()
     let arguments = self.parse_arguments()
-    result.push({ position: pos, name, arguments })
+    result.push({ position: pos, name, arguments, })
     continue
   }
   result
@@ -309,7 +309,7 @@ fn Parser::parse_default_value(self : Parser) -> Value raise ParseError {
 ///|
 fn unquote_string(source : String, position : Pos) -> String raise ParseError {
   let inner = source.view(start_offset=1, end_offset=source.length() - 1)
-  let builder = StringBuilder::new(size_hint=source.length())
+  let builder = StringBuilder(size_hint=source.length())
   for inner = inner {
     match inner {
       ['\\', c, .. tail] => {
@@ -363,7 +363,7 @@ fn unquote_block_string(source : String) -> String {
     .to_owned()
   let lines = rust_lines(body)
   let mut common_indent = 2147483647
-  let mut first_non_empty_line : Int? = None
+  let mut first_non_empty_line : Int32? = None
   let mut last_non_empty_line = 0
   for idx, line in lines {
     let trimmed = line.trim_start()
@@ -376,13 +376,13 @@ fn unquote_block_string(source : String) -> String {
     }
     last_non_empty_line = idx
     if idx != 0 {
-      common_indent = Int::min(common_indent, indent)
+      common_indent = Int32::min(common_indent, indent)
     }
   }
   match first_non_empty_line {
     None => ""
     Some(first) => {
-      let builder = StringBuilder::new(size_hint=source.length())
+      let builder = StringBuilder(size_hint=source.length())
       let mut first_output = true
       for idx in first..<=last_non_empty_line {
         let line = lines[idx]

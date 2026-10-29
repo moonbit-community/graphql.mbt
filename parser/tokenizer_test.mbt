@@ -3,19 +3,21 @@ using @test {assert_eq, assert_raise}
 
 ///|
 fn token_values(source : String) -> Array[String] raise {
-  tokenize(source)
+  @parser.tokenize(source)
   .filter(token => token.kind != TkEof)
   .map(token => token.value)
 }
 
 ///|
-fn token_kinds(source : String) -> Array[TokenKind] raise {
-  tokenize(source).filter(token => token.kind != TkEof).map(token => token.kind)
+fn token_kinds(source : String) -> Array[@parser.TokenKind] raise {
+  @parser.tokenize(source)
+  .filter(token => token.kind != TkEof)
+  .map(token => token.kind)
 }
 
 ///|
 fn assert_tokenize_error(source : String) -> Unit raise {
-  assert_raise(() => tokenize(source))
+  assert_raise(() => @parser.tokenize(source))
 }
 
 ///|

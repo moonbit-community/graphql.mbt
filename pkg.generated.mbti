@@ -22,24 +22,40 @@ pub fn[Ctx] validate(ExecutableSchema[Ctx], GraphQLRequest) -> Array[GraphQLErro
 pub(all) suberror CoercionError {
   CoercionError(String)
 } derive(Eq, @debug.Debug)
+pub fn CoercionError::equal(Self, Self) -> Bool
+pub fn CoercionError::not_equal(Self, Self) -> Bool
+pub fn CoercionError::output(Self, &Logger) -> Unit
+pub fn CoercionError::to_repr(Self) -> @debug.Repr
 pub fn CoercionError::to_string(Self) -> String
 pub impl Show for CoercionError
 
 pub(all) suberror ExecutionError {
   ExecutionError(String)
 } derive(Eq, @debug.Debug)
+pub fn ExecutionError::equal(Self, Self) -> Bool
+pub fn ExecutionError::not_equal(Self, Self) -> Bool
+pub fn ExecutionError::output(Self, &Logger) -> Unit
+pub fn ExecutionError::to_repr(Self) -> @debug.Repr
 pub fn ExecutionError::to_string(Self) -> String
 pub impl Show for ExecutionError
 
 pub(all) suberror SchemaError {
   SchemaError(String)
 } derive(Eq, @debug.Debug)
+pub fn SchemaError::equal(Self, Self) -> Bool
+pub fn SchemaError::not_equal(Self, Self) -> Bool
+pub fn SchemaError::output(Self, &Logger) -> Unit
+pub fn SchemaError::to_repr(Self) -> @debug.Repr
 pub fn SchemaError::to_string(Self) -> String
 pub impl Show for SchemaError
 
 pub(all) suberror ValidationError {
   ValidationError(String)
 } derive(Eq, @debug.Debug)
+pub fn ValidationError::equal(Self, Self) -> Bool
+pub fn ValidationError::not_equal(Self, Self) -> Bool
+pub fn ValidationError::output(Self, &Logger) -> Unit
+pub fn ValidationError::to_repr(Self) -> @debug.Repr
 pub fn ValidationError::to_string(Self) -> String
 pub impl Show for ValidationError
 
@@ -49,9 +65,12 @@ pub(all) struct Args {
 } derive(Eq, @debug.Debug)
 pub fn Args::contains(Self, String) -> Bool
 pub fn Args::empty() -> Self
+pub fn Args::equal(Self, Self) -> Bool
 pub fn[T : FromGraphQL] Args::get(Self, String) -> T raise CoercionError
 pub fn[T : FromGraphQL] Args::get_opt(Self, String) -> T? raise CoercionError
+pub fn Args::not_equal(Self, Self) -> Bool
 pub fn Args::to_map(Self) -> Map[String, InputValue]
+pub fn Args::to_repr(Self) -> @debug.Repr
 
 pub(all) struct DirectiveSpec {
   name : String
@@ -59,6 +78,9 @@ pub(all) struct DirectiveSpec {
   locations : Array[String]
   repeatable : Bool
 } derive(Eq, @debug.Debug)
+pub fn DirectiveSpec::equal(Self, Self) -> Bool
+pub fn DirectiveSpec::not_equal(Self, Self) -> Bool
+pub fn DirectiveSpec::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ExecutableSchema[Ctx] {
   registry : TypeRegistry
@@ -74,9 +96,12 @@ pub fn[Ctx] ExecutableSchema::query_type(Self[Ctx]) -> String
 pub fn[Ctx] ExecutableSchema::type_names(Self[Ctx]) -> Array[String]
 
 pub(all) struct ExecutionHttpResult {
-  status_code : Int
+  status_code : Int32
   response : GraphQLResponse
 } derive(Eq, @debug.Debug)
+pub fn ExecutionHttpResult::equal(Self, Self) -> Bool
+pub fn ExecutionHttpResult::not_equal(Self, Self) -> Bool
+pub fn ExecutionHttpResult::to_repr(Self) -> @debug.Repr
 
 pub(all) struct FieldDef {
   name : String
@@ -84,12 +109,15 @@ pub(all) struct FieldDef {
   field_type : @parser.GqlType
   directives : Array[@parser.Directive]
 } derive(Eq, @debug.Debug)
+pub fn FieldDef::equal(Self, Self) -> Bool
+pub fn FieldDef::not_equal(Self, Self) -> Bool
+pub fn FieldDef::to_repr(Self) -> @debug.Repr
 
 pub(all) enum GqlValue {
   GqlNull
   GqlString(String)
   GqlBoolean(Bool)
-  GqlInt(Int)
+  GqlInt(Int32)
   GqlInt64(Int64)
   GqlFloat(Double)
   GqlEnum(String)
@@ -97,10 +125,13 @@ pub(all) enum GqlValue {
   GqlObject(Map[String, GqlValue])
   GqlTypedObject(String, Map[String, GqlValue])
 } derive(Eq, @debug.Debug)
+pub fn GqlValue::equal(Self, Self) -> Bool
 pub fn GqlValue::field(Self, String) -> Self?
+pub fn GqlValue::not_equal(Self, Self) -> Bool
 pub fn GqlValue::object(ArrayView[(String, Self)]) -> Self
 pub fn GqlValue::runtime_type(Self, fallback~ : String) -> String
 pub fn GqlValue::to_json(Self) -> Json
+pub fn GqlValue::to_repr(Self) -> @debug.Repr
 pub fn GqlValue::typed_object(String, ArrayView[(String, Self)]) -> Self
 
 pub(all) struct GraphQLError {
@@ -108,23 +139,32 @@ pub(all) struct GraphQLError {
   path : Array[PathSegment]
   locations : Array[SourceLocation]
 } derive(Eq, @debug.Debug)
+pub fn GraphQLError::equal(Self, Self) -> Bool
 pub fn GraphQLError::new(String, path? : Array[PathSegment], locations? : Array[SourceLocation]) -> Self
+pub fn GraphQLError::not_equal(Self, Self) -> Bool
 pub fn GraphQLError::to_json(Self) -> Json
+pub fn GraphQLError::to_repr(Self) -> @debug.Repr
 
 pub(all) struct GraphQLRequest {
   query : String
   operation_name : String?
   variables : Map[String, InputValue]
 } derive(Eq, @debug.Debug)
+pub fn GraphQLRequest::equal(Self, Self) -> Bool
 pub fn GraphQLRequest::new(String, operation_name? : String, variables? : Map[String, InputValue]) -> Self
+pub fn GraphQLRequest::not_equal(Self, Self) -> Bool
+pub fn GraphQLRequest::to_repr(Self) -> @debug.Repr
 
 pub(all) struct GraphQLResponse {
   data : GqlValue?
   errors : Array[GraphQLError]
 } derive(Eq, @debug.Debug)
 pub fn GraphQLResponse::data(GqlValue) -> Self
+pub fn GraphQLResponse::equal(Self, Self) -> Bool
 pub fn GraphQLResponse::error(String) -> Self
+pub fn GraphQLResponse::not_equal(Self, Self) -> Bool
 pub fn GraphQLResponse::to_json(Self) -> Json
+pub fn GraphQLResponse::to_repr(Self) -> @debug.Repr
 
 pub(all) enum InputValue {
   InputNull
@@ -136,19 +176,28 @@ pub(all) enum InputValue {
   InputList(Array[InputValue])
   InputObject(Map[String, InputValue])
 } derive(Eq, @debug.Debug)
+pub fn InputValue::equal(Self, Self) -> Bool
 pub fn InputValue::from_json(Json) -> Self
+pub fn InputValue::not_equal(Self, Self) -> Bool
 pub fn InputValue::to_json(Self) -> Json
+pub fn InputValue::to_repr(Self) -> @debug.Repr
 
 pub(all) enum IntrospectionFormat {
   Full
   TypeNamesOnly
 } derive(Eq, @debug.Debug)
+pub fn IntrospectionFormat::equal(Self, Self) -> Bool
+pub fn IntrospectionFormat::not_equal(Self, Self) -> Bool
+pub fn IntrospectionFormat::to_repr(Self) -> @debug.Repr
 
 pub(all) enum PathSegment {
   PathField(String)
-  PathIndex(Int)
+  PathIndex(Int32)
 } derive(Eq, @debug.Debug)
+pub fn PathSegment::equal(Self, Self) -> Bool
+pub fn PathSegment::not_equal(Self, Self) -> Bool
 pub fn PathSegment::to_json(Self) -> Json
+pub fn PathSegment::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ResolveInfo {
   type_name : String
@@ -157,6 +206,9 @@ pub(all) struct ResolveInfo {
   path : Array[PathSegment]
   source : GqlValue
 } derive(Eq, @debug.Debug)
+pub fn ResolveInfo::equal(Self, Self) -> Bool
+pub fn ResolveInfo::not_equal(Self, Self) -> Bool
+pub fn ResolveInfo::to_repr(Self) -> @debug.Repr
 
 pub(all) struct SchemaBuilder[Ctx] {
   registry : TypeRegistry
@@ -176,10 +228,13 @@ pub fn[Ctx] SchemaBuilder::resolve_type(Self[Ctx], String, async (String, GqlVal
 pub fn[Ctx] SchemaBuilder::subscribe(Self[Ctx], String, String, async (ResolveInfo, Args, Ctx) -> SubscriptionStream) -> Self[Ctx]
 
 pub(all) struct SourceLocation {
-  line : Int
-  column : Int
+  line : Int32
+  column : Int32
 } derive(Eq, @debug.Debug)
+pub fn SourceLocation::equal(Self, Self) -> Bool
+pub fn SourceLocation::not_equal(Self, Self) -> Bool
 pub fn SourceLocation::to_json(Self) -> Json
+pub fn SourceLocation::to_repr(Self) -> @debug.Repr
 
 pub(all) struct SubscriptionStream {
   queue : @aqueue.Queue[GraphQLResponse]
@@ -197,22 +252,31 @@ pub(all) enum TypeDef {
   EnumDef(description~ : String?, values~ : Array[String])
   InputObjectDef(description~ : String?, fields~ : Map[String, @parser.InputValue])
 } derive(Eq, @debug.Debug)
+pub fn TypeDef::equal(Self, Self) -> Bool
 pub fn TypeDef::fields(Self) -> Map[String, FieldDef]?
 pub fn TypeDef::is_input(Self) -> Bool
 pub fn TypeDef::is_leaf(Self) -> Bool
+pub fn TypeDef::not_equal(Self, Self) -> Bool
+pub fn TypeDef::to_repr(Self) -> @debug.Repr
 
 pub(all) struct TypeRegistry {
   types : Map[String, TypeDef]
   directives : Map[String, DirectiveSpec]
 } derive(Eq, @debug.Debug)
 pub fn TypeRegistry::contains(Self, String) -> Bool
+pub fn TypeRegistry::equal(Self, Self) -> Bool
 pub fn TypeRegistry::field(Self, String, String) -> FieldDef?
 pub fn TypeRegistry::get(Self, String) -> TypeDef?
+pub fn TypeRegistry::not_equal(Self, Self) -> Bool
+pub fn TypeRegistry::to_repr(Self) -> @debug.Repr
 
 pub(all) struct ValidationConfig {
   disable_introspection : Bool
 } derive(Eq, @debug.Debug)
 pub fn ValidationConfig::default() -> Self
+pub fn ValidationConfig::equal(Self, Self) -> Bool
+pub fn ValidationConfig::not_equal(Self, Self) -> Bool
+pub fn ValidationConfig::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 pub type Resolver[Ctx] = async (ResolveInfo, Args, Ctx) -> GqlValue
@@ -226,7 +290,7 @@ pub(open) trait FromGraphQL {
   fn from_graphql(InputValue) -> Self raise CoercionError
 }
 pub impl FromGraphQL for Bool
-pub impl FromGraphQL for Int
+pub impl FromGraphQL for Int32
 pub impl FromGraphQL for Int64
 pub impl FromGraphQL for Double
 pub impl FromGraphQL for String
@@ -238,11 +302,10 @@ pub(open) trait ToGraphQL {
   fn to_graphql(Self) -> GqlValue
 }
 pub impl ToGraphQL for Bool
-pub impl ToGraphQL for Int
+pub impl ToGraphQL for Int32
 pub impl ToGraphQL for Int64
 pub impl ToGraphQL for Double
 pub impl ToGraphQL for String
 pub impl[T : ToGraphQL] ToGraphQL for T?
 pub impl[T : ToGraphQL] ToGraphQL for Array[T]
 pub impl ToGraphQL for Json
-

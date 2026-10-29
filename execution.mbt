@@ -33,7 +33,7 @@ pub async fn[Ctx] execute(
 ///|
 /// HTTP-oriented execution result containing status code and GraphQL response.
 pub(all) struct ExecutionHttpResult {
-  status_code : Int
+  status_code : Int32
   response : GraphQLResponse
 } derive(Eq, Debug)
 
@@ -105,7 +105,7 @@ pub async fn[Ctx] execute_with_status(
   )
   {
     status_code: 200,
-    response: { data: Some(result.value), errors: result.errors },
+    response: { data: Some(result.value), errors: result.errors, },
   }
 }
 
@@ -226,7 +226,7 @@ async fn[Ctx] execute_selection_set(
   context : Ctx,
   path : Array[PathSegment],
 ) -> CompleteResult {
-  let object : Map[String, GqlValue] = {}
+  let object : Map[String, GqlValue] = Map([])
   let errors : Array[GraphQLError] = []
   let runtime_type = source.runtime_type(fallback=type_name)
   let collection = collect_execution_fields(
@@ -242,10 +242,10 @@ async fn[Ctx] execute_selection_set(
     object[response_key] = field_result.value
     errors.append(field_result.errors)
     if field_result.bubble_null {
-      return { value: GqlNull, errors, bubble_null: true }
+      return { value: GqlNull, errors, bubble_null: true, }
     }
   }
-  { value: GqlObject(object), errors, bubble_null: false }
+  { value: GqlObject(object), errors, bubble_null: false, }
 }
 
 ///|
@@ -267,7 +267,7 @@ async fn[Ctx] execute_field(
   let path = parent_path.copy()
   path.push(PathField(response_key))
   if field.name == "__typename" {
-    return { value: GqlString(type_name), errors: [], bubble_null: false }
+    return { value: GqlString(type_name), errors: [], bubble_null: false, }
   }
   if field.name == "__schema" {
     return {
@@ -395,14 +395,14 @@ async fn[Ctx] complete_value(
             GraphQLError::new("non-null field resolved to null", path~),
           )
         }
-        { value: GqlNull, errors, bubble_null: true }
+        { value: GqlNull, errors, bubble_null: true, }
       } else {
-        { value: result.value, errors: result.errors, bubble_null: false }
+        { value: result.value, errors: result.errors, bubble_null: false, }
       }
     }
     ListType(inner) =>
       match value {
-        GqlNull => { value: GqlNull, errors: [], bubble_null: false }
+        GqlNull => { value: GqlNull, errors: [], bubble_null: false, }
         GqlList(values) => {
           let completed : Array[GqlValue] = []
           let errors : Array[GraphQLError] = []
@@ -417,13 +417,13 @@ async fn[Ctx] complete_value(
             if result.bubble_null {
               completed.push(GqlNull)
               if is_non_null(inner) {
-                return { value: GqlNull, errors, bubble_null: true }
+                return { value: GqlNull, errors, bubble_null: true, }
               }
             } else {
               completed.push(result.value)
             }
           }
-          { value: GqlList(completed), errors, bubble_null: false }
+          { value: GqlList(completed), errors, bubble_null: false, }
         }
         _ =>
           {
@@ -440,10 +440,10 @@ async fn[Ctx] complete_value(
     NamedType(name) =>
       match schema.registry.types.get(name) {
         Some(ScalarDef(_)) | Some(EnumDef(_)) =>
-          { value, errors: [], bubble_null: false }
+          { value, errors: [], bubble_null: false, }
         Some(ObjectDef(_)) =>
           if value == GqlNull {
-            { value: GqlNull, errors: [], bubble_null: false }
+            { value: GqlNull, errors: [], bubble_null: false, }
           } else {
             let runtime_type = value.runtime_type(fallback=name)
             if runtime_type != name {
@@ -465,7 +465,7 @@ async fn[Ctx] complete_value(
           }
         Some(InterfaceDef(_)) | Some(UnionDef(_)) =>
           if value == GqlNull {
-            { value: GqlNull, errors: [], bubble_null: false }
+            { value: GqlNull, errors: [], bubble_null: false, }
           } else {
             match
               resolve_abstract_runtime_type(schema, name, value, context, path) {
@@ -475,7 +475,7 @@ async fn[Ctx] complete_value(
                   context, path,
                 )
               Err(error) =>
-                { value: GqlNull, errors: [error], bubble_null: false }
+                { value: GqlNull, errors: [error], bubble_null: false, }
             }
           }
         Some(InputObjectDef(_)) | None =>
@@ -498,7 +498,7 @@ fn[Ctx] collect_execution_fields(
   variables : Map[String, InputValue],
   fragments : Map[String, @parser.FragmentDefinition],
 ) -> RuntimeFieldCollection {
-  let collection = RuntimeFieldCollection::{ keys: [], fields: {} }
+  let collection = RuntimeFieldCollection::{ keys: [], fields: {}, }
   collect_execution_fields_into(
     schema, runtime_type, selection_set, variables, fragments, collection,
   )
@@ -588,7 +588,7 @@ fn merge_runtime_fields(fields : Array[@parser.Field]) -> @parser.Field {
     name: first.name,
     arguments: first.arguments,
     directives: first.directives,
-    selection_set: { span: first.selection_set.span, items },
+    selection_set: { span: first.selection_set.span, items, },
   }
 }
 

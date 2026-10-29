@@ -3,8 +3,8 @@ name = "moonbit-community/graphql"
 version = "0.1.0"
 
 import {
-  "moonbitlang/x@0.4.43",
-  "moonbitlang/async@0.19.4",
+  "moonbitlang/x@0.5.6",
+  "moonbitlang/async@0.22.5",
 }
 
 readme = "README.mbt.md"
@@ -17,4 +17,4 @@ license = "Apache-2.0"
 
 keywords = [ ]
 
-description = ""
+description = "GraphQL parsing, validation, execution, and native HTTP transport for MoonBit."

@@ -19,9 +19,9 @@ pub(all) struct Token {
   kind : TokenKind
   value : String
   position : Pos
-  start_offset : Int
-  end_offset : Int
-  next_offset : Int
+  start_offset : Int32
+  end_offset : Int32
+  next_offset : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -32,9 +32,9 @@ pub(all) struct Token {
 priv struct Lexer {
   source : String
   mut input : StringView
-  mut line : Int
-  mut column : Int
-  mut recursion_limit : Int
+  mut line : Int32
+  mut column : Int32
+  mut recursion_limit : Int32
 }
 
 ///|
@@ -54,7 +54,7 @@ pub fn tokenize(source : String) -> Array[Token] raise ParseError {
   while true {
     lexer.skip_ignored()
     let start = lexer.input.start_offset()
-    let position = { line: lexer.line, column: lexer.column }
+    let position = { line: lexer.line, column: lexer.column, }
     match lexer.input {
       [] => {
         tokens.push({
@@ -89,7 +89,7 @@ pub fn tokenize(source : String) -> Array[Token] raise ParseError {
 ///|
 fn tokenize_first_query_definition(
   source : String,
-) -> (Array[Token], Int) raise ParseError {
+) -> (Array[Token], Int32) raise ParseError {
   let lexer = Lexer::{
     source,
     input: source[:],
@@ -103,7 +103,7 @@ fn tokenize_first_query_definition(
   while true {
     lexer.skip_ignored()
     let start = lexer.input.start_offset()
-    let position = { line: lexer.line, column: lexer.column }
+    let position = { line: lexer.line, column: lexer.column, }
     match lexer.input {
       [] => {
         push_eof(tokens, position, start)
@@ -128,7 +128,7 @@ fn tokenize_first_query_definition(
             let eof_offset = token.next_offset
             push_eof(
               tokens,
-              { line: lexer.line, column: lexer.column },
+              { line: lexer.line, column: lexer.column, },
               eof_offset,
             )
             return (tokens, eof_offset)
@@ -144,7 +144,7 @@ fn tokenize_first_query_definition(
             let eof_offset = token.next_offset
             push_eof(
               tokens,
-              { line: lexer.line, column: lexer.column },
+              { line: lexer.line, column: lexer.column, },
               eof_offset,
             )
             return (tokens, eof_offset)
@@ -158,7 +158,7 @@ fn tokenize_first_query_definition(
 }
 
 ///|
-fn push_eof(tokens : Array[Token], position : Pos, offset : Int) -> Unit {
+fn push_eof(tokens : Array[Token], position : Pos, offset : Int32) -> Unit {
   tokens.push({
     kind: TkEof,
     value: "",
@@ -187,7 +187,7 @@ fn is_query_definition_start(token : Token) -> Bool {
 fn Lexer::take_token(
   self : Lexer,
   position : Pos,
-) -> (TokenKind, Int) raise ParseError {
+) -> (TokenKind, Int32) raise ParseError {
   match self.input {
     ['(', .. rest] | ['[', .. rest] | ['{', .. rest] => {
       if self.recursion_limit == 0 {
@@ -218,13 +218,13 @@ fn Lexer::take_token(
     }
     ['.', ..] =>
       parse_error("bare dot '.' is not supported, only \"...\"", position)
-    ['_', ..] | ['a'..='z', ..] | ['A'..='Z', ..] => {
+    ['_', ..] | ['a'..<='z', ..] | ['A'..<='Z', ..] => {
       let rest = scan_while(self.input, is_name_continue)
       let count = self.input.start_offset().until(rest.start_offset()).count()
       self.advance_to(rest, count)
       (TkName, self.input.start_offset())
     }
-    ['-', ..] | ['0'..='9', ..] => self.take_number(position)
+    ['-', ..] | ['0'..<='9', ..] => self.take_number(position)
     ['"', '"', '"', .. rest] => self.take_block_string(rest, position)
     ['"', .. rest] => self.take_string(rest, position)
     [c, ..] => parse_error("unexpected character \{c}", position)
@@ -236,7 +236,7 @@ fn Lexer::take_token(
 fn Lexer::take_number(
   self : Lexer,
   position : Pos,
-) -> (TokenKind, Int) raise ParseError {
+) -> (TokenKind, Int32) raise ParseError {
   let start = self.input.start_offset()
   let rest = scan_number_tail(self.input)
   let end_offset = rest.start_offset()
@@ -263,7 +263,7 @@ fn Lexer::take_string(
   self : Lexer,
   rest_after_quote : StringView,
   position : Pos,
-) -> (TokenKind, Int) raise ParseError {
+) -> (TokenKind, Int32) raise ParseError {
   let start = self.input.start_offset()
   let mut escaped = false
   let rest = rest_after_quote
@@ -294,7 +294,7 @@ fn Lexer::take_block_string(
   self : Lexer,
   rest_after_open : StringView,
   position : Pos,
-) -> (TokenKind, Int) raise ParseError {
+) -> (TokenKind, Int32) raise ParseError {
   let start = self.input.start_offset()
   let rest = rest_after_open
   let mut previous = '\u{0}'
@@ -317,7 +317,7 @@ fn Lexer::take_block_string(
 }
 
 ///|
-fn Lexer::advance_to(self : Lexer, rest : StringView, columns : Int) -> Unit {
+fn Lexer::advance_to(self : Lexer, rest : StringView, columns : Int32) -> Unit {
   self.input = rest
   self.column += columns
 }
@@ -538,11 +538,11 @@ fn check_float(value : String) -> Bool {
 }
 
 ///|
-fn first_exponent(value : String) -> Int? {
+fn first_exponent(value : String) -> Int32? {
   let lower = value.find("e")
   let upper = value.find("E")
   match (lower, upper) {
-    (Some(a), Some(b)) => Some(Int::min(a, b))
+    (Some(a), Some(b)) => Some(Int32::min(a, b))
     (Some(a), None) => Some(a)
     (None, Some(b)) => Some(b)
     (None, None) => None

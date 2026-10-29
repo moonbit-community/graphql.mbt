@@ -12,7 +12,7 @@ pub(all) struct Args {
 ///|
 /// Create an empty argument set for helpers and tests.
 pub fn Args::empty() -> Args {
-  { values: {} }
+  { values: {}, }
 }
 
 ///|

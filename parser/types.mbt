@@ -1,8 +1,8 @@
 ///|
 /// 1-based source position in a GraphQL document.
 pub(all) struct Pos {
-  line : Int
-  column : Int
+  line : Int32
+  column : Int32
 } derive(Eq, Debug)
 
 ///|
@@ -17,7 +17,7 @@ pub(all) suberror ParseError {
 /// Render a parse error with line and column context.
 pub fn ParseError::to_string(self : ParseError) -> String {
   match self {
-    GraphQLParseError(message, { line, column }) =>
+    GraphQLParseError(message, { line, column, }) =>
       "graphql parse error at \{line}:\{column}: \{message}"
   }
 }
@@ -520,19 +520,19 @@ fn parse_directive_location(
 ///|
 /// Pretty-printer options for parsed query and schema documents.
 pub(all) struct Style {
-  indent : Int
+  indent : Int32
   multiline_arguments : Bool
 } derive(Eq, Debug)
 
 ///|
 /// Default formatting style: two-space indentation and inline arguments.
 pub fn Style::default() -> Style {
-  { indent: 2, multiline_arguments: false }
+  { indent: 2, multiline_arguments: false, }
 }
 
 ///|
 /// Return a copy of the style with a new indentation width.
-pub fn Style::with_indent(self : Style, indent : Int) -> Style {
+pub fn Style::with_indent(self : Style, indent : Int32) -> Style {
   { ..self, indent, }
 }
 
