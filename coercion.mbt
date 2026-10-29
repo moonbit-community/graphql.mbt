@@ -45,7 +45,7 @@ fn parser_value_to_maybe_input(
       InputProvided(InputList(list))
     }
     ObjectValue(fields) => {
-      let object : Map[String, InputValue] = {}
+      let object : Map[String, InputValue] = Map([])
       for pair in fields {
         let name = pair.0
         let value = pair.1
@@ -167,7 +167,7 @@ fn coerce_input_object(
       coercion_error("unknown field `\{type_name}.\{name}`")
     }
   }
-  let coerced : Map[String, InputValue] = {}
+  let coerced : Map[String, InputValue] = Map([])
   for name, field in fields.iter2() {
     match object.get(name) {
       Some(value) =>
@@ -202,7 +202,7 @@ fn coerce_argument_values(
   variables : Map[String, InputValue],
 ) -> Args raise CoercionError {
   let provided : Map[String, @parser.Value] = Map::from_array(values)
-  let result : Map[String, InputValue] = {}
+  let result : Map[String, InputValue] = Map([])
   for name, _ in provided.iter2() {
     if !definitions.any(def => def.name == name) {
       coercion_error("unknown argument `\{name}`")
@@ -224,7 +224,7 @@ fn coerce_argument_values(
       None => apply_argument_default_or_required(registry, result, definition)
     }
   }
-  { values: result }
+  { values: result, }
 }
 
 ///|
@@ -255,7 +255,7 @@ fn coerce_variable_values(
   definitions : Array[@parser.VariableDefinition],
   provided : Map[String, InputValue],
 ) -> Map[String, InputValue] raise CoercionError {
-  let variables : Map[String, InputValue] = {}
+  let variables : Map[String, InputValue] = Map([])
   for definition in definitions {
     match provided.get(definition.name) {
       Some(value) =>

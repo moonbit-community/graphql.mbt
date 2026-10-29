@@ -15,7 +15,7 @@ test "minify query strips ignored characters" {
     #|        }
     #|        
   assert_eq(
-    minify_query(source),
+    @parser.minify_query(source),
     "query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{...on B{c d}}}}",
   )
 }
@@ -28,7 +28,7 @@ test "minify query unexpected token" {
     #|            bar;
     #|        }
     #|        
-  try minify_query(source) catch {
+  try @parser.minify_query(source) catch {
     err => assert_true(err.to_string().contains("unexpected character"))
   } noraise {
     _ => assert_true(false)

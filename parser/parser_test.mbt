@@ -1,30 +1,33 @@
 ///|
 fn query_roundtrip(source : String) -> Unit raise {
-  let document = parse_query(source)
+  let document = @parser.parse_query(source)
   assert_eq(document.to_string(), with_final_newline(source))
 }
 
 ///|
-fn query_roundtrip_with_style(source : String, style : Style) -> Unit raise {
-  let document = parse_query(source)
+fn query_roundtrip_with_style(
+  source : String,
+  style : @parser.Style,
+) -> Unit raise {
+  let document = @parser.parse_query(source)
   assert_eq(document.format(style~), with_final_newline(source))
 }
 
 ///|
 fn query_canonical(source : String, expected : String) -> Unit raise {
-  let document = parse_query(source)
+  let document = @parser.parse_query(source)
   assert_eq(document.to_string(), with_final_newline(expected))
 }
 
 ///|
 fn schema_roundtrip(source : String) -> Unit raise {
-  let document = parse_schema(source)
+  let document = @parser.parse_schema(source)
   assert_eq(document.to_string(), with_final_newline(source))
 }
 
 ///|
 fn schema_canonical(source : String, expected : String) -> Unit raise {
-  let document = parse_schema(source)
+  let document = @parser.parse_schema(source)
   assert_eq(document.to_string(), with_final_newline(expected))
 }
 
@@ -39,7 +42,7 @@ fn with_final_newline(source : String) -> String {
 
 ///|
 test "tokenizer comments commas and simple tokens" {
-  let tokens = tokenize("# x\n,,, a { b }")
+  let tokens = @parser.tokenize("# x\n,,, a { b }")
     .filter(token => token.kind != TkEof)
     .map(token => token.value)
   assert_eq(tokens, ["a", "{", "b", "}"])
@@ -47,7 +50,7 @@ test "tokenizer comments commas and simple tokens" {
 
 ///|
 test "tokenizer number and string validation" {
-  assert_eq(tokenize("0 -0 -132 132 0.5 1.23e4").map(t => t.kind), [
+  assert_eq(@parser.tokenize("0 -0 -132 132 0.5 1.23e4").map(t => t.kind), [
     TkIntValue,
     TkIntValue,
     TkIntValue,
@@ -56,9 +59,9 @@ test "tokenizer number and string validation" {
     TkFloatValue,
     TkEof,
   ])
-  @test.assert_raise(() => tokenize("01"))
-  @test.assert_raise(() => tokenize(".1"))
-  @test.assert_raise(() => tokenize("\"unterminated"))
+  @test.assert_raise(() => @parser.tokenize("01"))
+  @test.assert_raise(() => @parser.tokenize(".1"))
+  @test.assert_raise(() => @parser.tokenize("\"unterminated"))
 }
 
 ///|
@@ -187,7 +190,7 @@ test "query multiline arguments style" {
       #|  )
       #|}
     ),
-    Style::default().with_multiline_arguments(true),
+    @parser.Style::default().with_multiline_arguments(true),
   )
 }
 
@@ -212,7 +215,7 @@ test "query canonicalization and consume" {
       #|}
     ),
   )
-  let (_, rest) = consume_definition("query { a } query { b }")
+  let (_, rest) = @parser.consume_definition("query { a } query { b }")
   assert_eq(rest, "query { b }")
 }
 
@@ -231,10 +234,10 @@ test "minify query" {
     #|  }
     #|}
   assert_eq(
-    minify_query(source),
+    @parser.minify_query(source),
     "query SomeQuery($foo:String!$bar:String){someField(foo:$foo bar:$bar){a b{...on B{c d}}}}",
   )
-  @test.assert_raise(() => minify_query("query foo { bar; }"))
+  @test.assert_raise(() => @parser.minify_query("query foo { bar; }"))
 }
 
 ///|

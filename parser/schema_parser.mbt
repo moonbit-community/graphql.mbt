@@ -72,7 +72,7 @@ fn Parser::parse_schema_root_definition(
     }
     continue
   }
-  { position, directives, query, mutation, subscription }
+  { position, directives, query, mutation, subscription, }
 }
 
 ///|
@@ -136,7 +136,7 @@ fn Parser::parse_scalar_type(
   let position = self.expect_ident("scalar").position
   let (name, _) = self.expect_name()
   let directives = self.parse_directives()
-  { position, description, name, directives }
+  { position, description, name, directives, }
 }
 
 ///|
@@ -151,7 +151,7 @@ fn Parser::parse_scalar_type_extension(
       "Scalar type extension should contain at least one directive.", position,
     )
   }
-  { position, name, directives }
+  { position, name, directives, }
 }
 
 ///|
@@ -194,7 +194,7 @@ fn Parser::parse_input_value(self : Parser) -> InputValue raise ParseError {
     None
   }
   let directives = self.parse_directives()
-  { position, description, name, value_type, default_value, directives }
+  { position, description, name, value_type, default_value, directives, }
 }
 
 ///|
@@ -234,7 +234,7 @@ fn Parser::parse_schema_field(self : Parser) -> SchemaField raise ParseError {
   ignore(self.expect_punct(":"))
   let field_type = self.parse_type()
   let directives = self.parse_directives()
-  { position, description, name, arguments, field_type, directives }
+  { position, description, name, arguments, field_type, directives, }
 }
 
 ///|
@@ -268,7 +268,7 @@ fn Parser::parse_object_type(
   let implements_interfaces = self.parse_implements_interfaces()
   let directives = self.parse_directives()
   let fields = self.parse_fields()
-  { position, description, name, implements_interfaces, directives, fields }
+  { position, description, name, implements_interfaces, directives, fields, }
 }
 
 ///|
@@ -288,7 +288,7 @@ fn Parser::parse_object_type_extension(
       position,
     )
   }
-  { position, name, implements_interfaces, directives, fields }
+  { position, name, implements_interfaces, directives, fields, }
 }
 
 ///|
@@ -301,7 +301,7 @@ fn Parser::parse_interface_type(
   let implements_interfaces = self.parse_implements_interfaces()
   let directives = self.parse_directives()
   let fields = self.parse_fields()
-  { position, description, name, implements_interfaces, directives, fields }
+  { position, description, name, implements_interfaces, directives, fields, }
 }
 
 ///|
@@ -319,7 +319,7 @@ fn Parser::parse_interface_type_extension(
       position,
     )
   }
-  { position, name, implements_interfaces, directives, fields }
+  { position, name, implements_interfaces, directives, fields, }
 }
 
 ///|
@@ -348,7 +348,7 @@ fn Parser::parse_union_type(
   let (name, _) = self.expect_name()
   let directives = self.parse_directives()
   let types = if self.eat_punct("=") { self.parse_union_members() } else { [] }
-  { position, description, name, directives, types }
+  { position, description, name, directives, types, }
 }
 
 ///|
@@ -365,7 +365,7 @@ fn Parser::parse_union_type_extension(
       "Union type extension should contain at least one directive or type.", position,
     )
   }
-  { position, name, directives, types }
+  { position, name, directives, types, }
 }
 
 ///|
@@ -392,7 +392,7 @@ fn Parser::parse_enum_values(
     }
     let (name, _) = self.expect_name()
     let directives = self.parse_directives()
-    values.push({ position, description, name, directives })
+    values.push({ position, description, name, directives, })
     continue
   }
   values
@@ -407,7 +407,7 @@ fn Parser::parse_enum_type(
   let (name, _) = self.expect_name()
   let directives = self.parse_directives()
   let values = if self.check_punct("{") { self.parse_enum_values() } else { [] }
-  { position, description, name, directives, values }
+  { position, description, name, directives, values, }
 }
 
 ///|
@@ -424,7 +424,7 @@ fn Parser::parse_enum_type_extension(
       "Enum type extension should contain at least one directive or value.", position,
     )
   }
-  { position, name, directives, values }
+  { position, name, directives, values, }
 }
 
 ///|
@@ -459,7 +459,7 @@ fn Parser::parse_input_object_type(
   let (name, _) = self.expect_name()
   let directives = self.parse_directives()
   let fields = self.parse_input_fields()
-  { position, description, name, directives, fields }
+  { position, description, name, directives, fields, }
 }
 
 ///|
@@ -476,7 +476,7 @@ fn Parser::parse_input_object_type_extension(
       position,
     )
   }
-  { position, name, directives, fields }
+  { position, name, directives, fields, }
 }
 
 ///|
@@ -513,5 +513,5 @@ fn Parser::parse_directive_definition(
   let repeatable = self.eat_ident("repeatable")
   ignore(self.expect_ident("on"))
   let locations = self.parse_directive_locations()
-  { position, description, name, arguments, repeatable, locations }
+  { position, description, name, arguments, repeatable, locations, }
 }

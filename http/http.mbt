@@ -9,7 +9,7 @@ pub(all) struct HttpConfig {
   graphql_path : String
   graphiql_path : String?
   websocket_path : String?
-  max_body_bytes : Int?
+  max_body_bytes : Int32?
 } derive(Eq, Debug)
 
 ///|
@@ -28,7 +28,7 @@ pub fn HttpConfig::default() -> HttpConfig {
 ///
 /// This type keeps request handling testable without needing a live socket.
 pub(all) struct HttpResponse {
-  status_code : Int
+  status_code : Int32
   reason : String
   headers : Map[String, String]
   body : String
@@ -56,10 +56,14 @@ pub async fn[Ctx] serve(
     let body_text = body.read_all().text()
     let ctx = context(request)
     let response = handle_request(schema, request, body_text, ctx, config~)
+    let headers : @async_http.Headers = Map([])
+    for name, value in response.headers {
+      headers[@async_http.CaseInsensitiveString(name)] = value
+    }
     conn.send_response(
       response.status_code,
       response.reason,
-      extra_headers=response.headers,
+      extra_headers=headers,
     )
     conn.write(response.body)
     conn.end_response()
@@ -248,7 +252,7 @@ async fn[Ctx] serve_ws(
   let ws = @websocket.from_http_server(request, conn)
   defer ws.close()
   @async.with_task_group(group => {
-    let tasks : Map[String, @async.Task[Unit]] = {}
+    let tasks : Map[String, @async.Task[Unit]] = Map([])
     defer cancel_ws_tasks(tasks)
     for ;; {
       let message = ws.recv()
@@ -479,7 +483,7 @@ fn request_from_json(json : Json) -> Result[@graphql.GraphQLRequest, String] {
   }
   let variables = match object.get("variables") {
     Some(Object(raw_variables)) => {
-      let values : Map[String, @graphql.InputValue] = {}
+      let values : Map[String, @graphql.InputValue] = Map([])
       for name, value in raw_variables.iter2() {
         values[name] = @graphql.InputValue::from_json(value)
       }
@@ -488,7 +492,7 @@ fn request_from_json(json : Json) -> Result[@graphql.GraphQLRequest, String] {
     Some(Null) | None => {}
     _ => return Err("`variables` must be an object or null")
   }
-  Ok(@graphql.GraphQLRequest::{ query, operation_name, variables })
+  Ok(@graphql.GraphQLRequest::{ query, operation_name, variables, })
 }
 
 ///|
@@ -508,7 +512,7 @@ fn request_from_query_string(
         err => return Err(err.to_string())
       } noraise {
         Object(raw_variables) => {
-          let values : Map[String, @graphql.InputValue] = {}
+          let values : Map[String, @graphql.InputValue] = Map([])
           for name, value in raw_variables.iter2() {
             values[name] = @graphql.InputValue::from_json(value)
           }
@@ -519,12 +523,12 @@ fn request_from_query_string(
       }
     None => {}
   }
-  Ok(@graphql.GraphQLRequest::{ query, operation_name, variables })
+  Ok(@graphql.GraphQLRequest::{ query, operation_name, variables, })
 }
 
 ///|
 fn query_params(query_string : String) -> Map[String, String] {
-  let params : Map[String, String] = {}
+  let params : Map[String, String] = Map([])
   if query_string.is_empty() {
     return params
   }
@@ -550,7 +554,7 @@ fn url_decode(source : String) -> String {
       let high = hex_value(source[index + 1].to_int())
       let low = hex_value(source[index + 2].to_int())
       if high >= 0 && low >= 0 {
-        chars.push(Int::unsafe_to_char(high * 16 + low))
+        chars.push(Int32::unsafe_to_char(high * 16 + low))
         index = index + 3
         continue
       }
@@ -566,7 +570,7 @@ fn url_decode(source : String) -> String {
 }
 
 ///|
-fn hex_value(code : Int) -> Int {
+fn hex_value(code : Int32) -> Int32 {
   if code >= 48 && code <= 57 {
     code - 48
   } else if code >= 65 && code <= 70 {
@@ -597,13 +601,8 @@ fn @async_http.Request::query_string(self : @async_http.Request) -> String {
 }
 
 ///|
-fn header(headers : Map[String, String], name : String) -> String? {
-  for key, value in headers.iter2() {
-    if key.to_lower() == name.to_lower() {
-      return Some(value)
-    }
-  }
-  None
+fn header(headers : @async_http.Headers, name : String) -> String? {
+  headers.get(@async_http.CaseInsensitiveString(name))
 }
 
 ///|
@@ -623,7 +622,7 @@ fn is_websocket_request(
 
 ///|
 fn json_response(
-  status_code : Int,
+  status_code : Int32,
   reason : String,
   body : Json,
 ) -> HttpResponse {
@@ -637,7 +636,7 @@ fn json_response(
 
 ///|
 fn text_response(
-  status_code : Int,
+  status_code : Int32,
   reason : String,
   body : String,
   content_type : String,
@@ -654,7 +653,7 @@ fn text_response(
 }
 
 ///|
-fn status_reason(status_code : Int) -> String {
+fn status_reason(status_code : Int32) -> String {
   match status_code {
     200 => "OK"
     400 => "Bad Request"

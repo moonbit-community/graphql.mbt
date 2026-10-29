@@ -31,7 +31,7 @@ fn select_operation(
   operation_name : String?,
 ) -> OperationPlan raise ValidationError {
   let operations : Array[OperationPlan] = []
-  let seen_operations : Map[String, Bool] = {}
+  let seen_operations : Map[String, Bool] = Map([])
   let mut has_anonymous = false
   for definition in document.definitions {
     match definition {
@@ -129,7 +129,7 @@ fn find_operation(
 fn fragment_map(
   document : @parser.QueryDocument,
 ) -> Map[String, @parser.FragmentDefinition] raise ValidationError {
-  let fragments : Map[String, @parser.FragmentDefinition] = {}
+  let fragments : Map[String, @parser.FragmentDefinition] = Map([])
   for definition in document.definitions {
     match definition {
       FragmentDefinition(fragment) =>
@@ -179,7 +179,7 @@ fn[Ctx] validate_document(
   validate_variable_definitions(schema.registry, operation.variable_definitions)
   validate_fragment_cycles(fragments)
   let root_type = operation_root_type(schema, operation)
-  let state = ValidationState::{ used_fragments: {}, used_variables: {} }
+  let state = ValidationState::{ used_fragments: {}, used_variables: {}, }
   validate_directives(
     schema.registry,
     operation.directives,
@@ -236,7 +236,7 @@ fn validate_variable_definitions(
   registry : TypeRegistry,
   definitions : Array[@parser.VariableDefinition],
 ) -> Unit raise ValidationError {
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for definition in definitions {
     if seen.contains(definition.name) {
       validation_error("duplicate variable `$\{definition.name}`")
@@ -247,7 +247,7 @@ fn validate_variable_definitions(
     }
     match definition.default_value {
       Some(default_value) => {
-        let state = ValidationState::{ used_fragments: {}, used_variables: {} }
+        let state = ValidationState::{ used_fragments: {}, used_variables: {}, }
         validate_input_value(
           registry,
           definition.var_type,
@@ -293,7 +293,7 @@ fn[Ctx] validate_selection_set(
     selection_set,
     fragments,
   )
-  let response_keys : Map[String, String] = {}
+  let response_keys : Map[String, String] = Map([])
   for selection in selection_set.items {
     match selection {
       FieldSelection(field) => {
@@ -440,7 +440,7 @@ fn validate_overlapping_fields(
   selection_set : @parser.SelectionSet,
   fragments : Map[String, @parser.FragmentDefinition],
 ) -> Unit raise ValidationError {
-  let groups : Map[String, Array[CollectedField]] = {}
+  let groups : Map[String, Array[CollectedField]] = Map([])
   collect_validation_fields(
     registry, type_name, selection_set, fragments, groups,
   )
@@ -473,7 +473,7 @@ fn collect_validation_fields(
         match validation_field_type(registry, type_name, field) {
           Some(field_type) => {
             let response_key = field.field_alias.unwrap_or(field.name)
-            let collected = { parent_type: type_name, field, field_type }
+            let collected = { parent_type: type_name, field, field_type, }
             match groups.get(response_key) {
               Some(fields) => fields.push(collected)
               None => groups[response_key] = [collected]
@@ -684,7 +684,7 @@ fn validate_arguments(
   variables : Array[@parser.VariableDefinition],
   state : ValidationState,
 ) -> Unit raise ValidationError {
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for pair in arguments {
     let name = pair.0
     let value = pair.1
@@ -725,7 +725,7 @@ fn validate_directives(
   variables : Array[@parser.VariableDefinition],
   state : ValidationState,
 ) -> Unit raise ValidationError {
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for directive in directives {
     let spec = match registry.directives.get("@" + directive.name) {
       Some(spec) => spec
@@ -910,7 +910,7 @@ fn validate_input_object_value(
     ObjectValue(fields) => fields
     _ => validation_error("expected input object `\{type_name}`")
   }
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for pair in fields {
     let name = pair.0
     let field_value = pair.1

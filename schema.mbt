@@ -127,7 +127,7 @@ pub(all) struct ValidationConfig {
 ///|
 /// Default validation configuration.
 pub fn ValidationConfig::default() -> ValidationConfig {
-  { disable_introspection: false }
+  { disable_introspection: false, }
 }
 
 ///|
@@ -168,7 +168,7 @@ pub(all) struct SubscriptionStream {
 ///|
 /// Create an unbounded subscription stream.
 pub fn SubscriptionStream::new() -> SubscriptionStream {
-  { queue: Queue(kind=Unbounded) }
+  { queue: Queue(kind=Unbounded), }
 }
 
 ///|
@@ -334,7 +334,7 @@ pub fn[Ctx] SchemaBuilder::disable_introspection(
     resolvers: self.resolvers,
     subscriptions: self.subscriptions,
     type_resolvers: self.type_resolvers,
-    validation: { disable_introspection: disabled },
+    validation: { disable_introspection: disabled, },
   }
 }
 
@@ -401,7 +401,7 @@ fn resolver_key(type_name : String, field_name : String) -> String {
 fn compile_schema(
   document : @parser.SchemaDocument,
 ) -> (TypeRegistry, String, String?, String?) raise SchemaError {
-  let registry = TypeRegistry::{ types: {}, directives: {} }
+  let registry = TypeRegistry::{ types: {}, directives: {}, }
   install_builtins(registry)
   let mut query_type : String? = None
   let mut mutation_type : String? = None
@@ -498,7 +498,7 @@ fn builtin_directive_arg(
   default_value : @parser.Value?,
 ) -> @parser.InputValue {
   {
-    position: { line: 0, column: 0 },
+    position: { line: 0, column: 0, },
     description: None,
     name,
     value_type,
@@ -644,7 +644,7 @@ fn install_directive_definition(
 fn schema_fields_to_map(
   fields : Array[@parser.SchemaField],
 ) -> Map[String, FieldDef] raise SchemaError {
-  let map : Map[String, FieldDef] = {}
+  let map : Map[String, FieldDef] = Map([])
   for field in fields {
     if map.contains(field.name) {
       schema_error("duplicate field `\{field.name}`")
@@ -663,7 +663,7 @@ fn schema_fields_to_map(
 fn input_values_to_map(
   values : Array[@parser.InputValue],
 ) -> Map[String, @parser.InputValue] raise SchemaError {
-  let map : Map[String, @parser.InputValue] = {}
+  let map : Map[String, @parser.InputValue] = Map([])
   for value in values {
     if map.contains(value.name) {
       schema_error("duplicate input field or argument `\{value.name}`")
@@ -826,7 +826,7 @@ fn schema_validate_directives(
   directives : Array[@parser.Directive],
   location : String,
 ) -> Unit raise SchemaError {
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for directive in directives {
     let spec = match registry.directives.get("@" + directive.name) {
       Some(spec) => spec
@@ -850,7 +850,7 @@ fn schema_validate_directive_arguments(
   spec : DirectiveSpec,
   arguments : Array[(String, @parser.Value)],
 ) -> Unit raise SchemaError {
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for pair in arguments {
     let name = pair.0
     if seen.contains(name) {

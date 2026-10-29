@@ -69,6 +69,6 @@ jobs:
       
       - name: moon test
         run: |
-          moon test --target all --serial
-          moon test --target all --serial --release
+          moon test --target all --jobs 1
+          moon test --target all --jobs 1 --release
           

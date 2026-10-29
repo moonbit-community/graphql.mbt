@@ -6,7 +6,7 @@
 /// diagnostics and simple tooling.
 pub fn[Ctx] introspect(
   schema : ExecutableSchema[Ctx],
-  format? : IntrospectionFormat = Full,
+  format~ : IntrospectionFormat = Full,
 ) -> Json {
   match format {
     TypeNamesOnly => {

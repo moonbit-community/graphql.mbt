@@ -1,8 +1,8 @@
 import {
+  "moonbitlang/core/debug",
   "moonbit-community/graphql",
   "moonbitlang/async",
   "moonbitlang/async/http" @async_http,
-  "moonbitlang/async/io",
   "moonbitlang/async/socket",
   "moonbitlang/async/websocket",
   "moonbitlang/core/json",

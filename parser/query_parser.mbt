@@ -29,7 +29,7 @@ pub fn consume_definition(
   source : String,
 ) -> (QueryDefinition, String) raise ParseError {
   let (tokens, rest_offset) = tokenize_first_query_definition(source)
-  let parser : Parser = { tokens, index: 0 }
+  let parser : Parser = { tokens, index: 0, }
   let definition = parser.parse_query_definition()
   parser.expect_eof()
   let rest = source.unsafe_substring(start=rest_offset, end=source.length())
@@ -78,14 +78,14 @@ fn Parser::parse_operation_definition(
 fn Parser::parse_query_operation(self : Parser) -> Query raise ParseError {
   let position = self.expect_ident("query").position
   let (name, variable_definitions, directives, selection_set) = self.parse_operation_common()
-  { position, name, variable_definitions, directives, selection_set }
+  { position, name, variable_definitions, directives, selection_set, }
 }
 
 ///|
 fn Parser::parse_mutation_operation(self : Parser) -> Mutation raise ParseError {
   let position = self.expect_ident("mutation").position
   let (name, variable_definitions, directives, selection_set) = self.parse_operation_common()
-  { position, name, variable_definitions, directives, selection_set }
+  { position, name, variable_definitions, directives, selection_set, }
 }
 
 ///|
@@ -94,7 +94,7 @@ fn Parser::parse_subscription_operation(
 ) -> Subscription raise ParseError {
   let position = self.expect_ident("subscription").position
   let (name, variable_definitions, directives, selection_set) = self.parse_operation_common()
-  { position, name, variable_definitions, directives, selection_set }
+  { position, name, variable_definitions, directives, selection_set, }
 }
 
 ///|
@@ -139,7 +139,7 @@ fn Parser::parse_variable_definitions(
     } else {
       None
     }
-    variables.push({ position, name, var_type, default_value })
+    variables.push({ position, name, var_type, default_value, })
     continue
   }
   variables
@@ -156,7 +156,7 @@ fn Parser::parse_fragment_definition(
   let type_condition = On(type_name)
   let directives = self.parse_directives()
   let selection_set = self.parse_selection_set()
-  { position, name, type_condition, directives, selection_set }
+  { position, name, type_condition, directives, selection_set, }
 }
 
 ///|
@@ -170,7 +170,7 @@ fn Parser::parse_selection_set(self : Parser) -> SelectionSet raise ParseError {
   while true {
     if self.check_punct("}") {
       let end = self.take().position
-      return { span: (start, end), items }
+      return { span: (start, end), items, }
     }
     items.push(self.parse_selection())
     continue
@@ -232,7 +232,7 @@ fn Parser::parse_field(self : Parser) -> Field raise ParseError {
   } else {
     empty_selection_set(position)
   }
-  { position, field_alias, name, arguments, directives, selection_set }
+  { position, field_alias, name, arguments, directives, selection_set, }
 }
 
 ///|
