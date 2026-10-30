@@ -67,3 +67,14 @@ test "block string empty" {
   assert_eq(unquote_block_string(quoted_block("")), "")
   assert_eq(unquote_block_string(quoted_block("   \n\t\n")), "")
 }
+
+///|
+test "unicode escape rejects surrogate pairs across fixed-width hex boundary" {
+  for source in ["\"\\u123😀a\"", "\"\\u12😀ab\""] {
+    try unquote_string(source, common_test_pos) catch {
+      _ => ()
+    } noraise {
+      _ => fail("expected invalid Unicode escape")
+    }
+  }
+}

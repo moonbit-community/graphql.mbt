@@ -525,14 +525,14 @@ fn check_float(value : String) -> Bool {
     (Some(e), Some(r)) if e < r => false
     (Some(e), Some(r)) =>
       check_int(value.unsafe_substring(start=0, end=r)) &&
-      check_dec(value.view(start_offset=r + 1, end_offset=e)) &&
-      check_exp(value.view(start_offset=e + 1))
+      check_dec(value[r + 1:e]) &&
+      check_exp(value[e + 1:])
     (Some(e), None) =>
       check_int(value.unsafe_substring(start=0, end=e)) &&
-      check_exp(value.view(start_offset=e + 1))
+      check_exp(value[e + 1:])
     (None, Some(r)) =>
       check_int(value.unsafe_substring(start=0, end=r)) &&
-      check_dec(value.view(start_offset=r + 1))
+      check_dec(value[r + 1:])
     (None, None) => false
   }
 }

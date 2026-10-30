@@ -308,7 +308,7 @@ fn Parser::parse_default_value(self : Parser) -> Value raise ParseError {
 
 ///|
 fn unquote_string(source : String, position : Pos) -> String raise ParseError {
-  let inner = source.view(start_offset=1, end_offset=source.length() - 1)
+  let inner = source[1:source.length() - 1]
   let builder = StringBuilder(size_hint=source.length())
   for inner = inner {
     match inner {
@@ -324,7 +324,12 @@ fn unquote_string(source : String, position : Pos) -> String raise ParseError {
             if !tail.char_length_ge(4) {
               parse_error("\\u must have 4 characters after it", position)
             }
-            let hex = tail.view(start_offset=0, end_offset=4).to_owned()
+            let hex = tail[0:4].to_owned()
+            // A clamped endpoint must not silently shorten a four-unit escape.
+            // Reject it before parsing, without constructing a lone surrogate.
+            if hex.length() != 4 {
+              parse_error("\\u must have 4 hexadecimal digits", position)
+            }
             let code = @string.parse_int(hex[:], base=16) catch {
               _ =>
                 parse_error(
@@ -340,7 +345,7 @@ fn unquote_string(source : String, position : Pos) -> String raise ParseError {
                   position,
                 )
             }
-            continue tail.view(start_offset=4)
+            continue tail[4:]
           }
           bad => parse_error("bad escaped char \{bad}", position)
         }
@@ -358,9 +363,7 @@ fn unquote_string(source : String, position : Pos) -> String raise ParseError {
 
 ///|
 fn unquote_block_string(source : String) -> String {
-  let body = source
-    .view(start_offset=3, end_offset=source.length() - 3)
-    .to_owned()
+  let body = source[3:source.length() - 3].to_owned()
   let lines = rust_lines(body)
   let mut common_indent = 2147483647
   let mut first_non_empty_line : Int32? = None
