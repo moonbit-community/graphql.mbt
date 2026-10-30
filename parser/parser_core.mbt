@@ -324,7 +324,14 @@ fn unquote_string(source : String, position : Pos) -> String raise ParseError {
             if !tail.char_length_ge(4) {
               parse_error("\\u must have 4 characters after it", position)
             }
-            let hex = tail[0:4].to_owned()
+            // Preserve all four raw code units so a split surrogate remains
+            // invalid hex instead of being silently removed by clamped slicing.
+            let hex = tail
+              .data()
+              .unsafe_substring(
+                start=tail.start_offset(),
+                end=tail.start_offset() + 4,
+              )
             let code = @string.parse_int(hex[:], base=16) catch {
               _ =>
                 parse_error(
