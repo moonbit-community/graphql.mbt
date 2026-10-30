@@ -324,14 +324,12 @@ fn unquote_string(source : String, position : Pos) -> String raise ParseError {
             if !tail.char_length_ge(4) {
               parse_error("\\u must have 4 characters after it", position)
             }
-            // Preserve all four raw code units so a split surrogate remains
-            // invalid hex instead of being silently removed by clamped slicing.
-            let hex = tail
-              .data()
-              .unsafe_substring(
-                start=tail.start_offset(),
-                end=tail.start_offset() + 4,
-              )
+            let hex = tail[0:4].to_owned()
+            // A clamped endpoint must not silently shorten a four-unit escape.
+            // Reject it before parsing, without constructing a lone surrogate.
+            if hex.length() != 4 {
+              parse_error("\\u must have 4 hexadecimal digits", position)
+            }
             let code = @string.parse_int(hex[:], base=16) catch {
               _ =>
                 parse_error(
